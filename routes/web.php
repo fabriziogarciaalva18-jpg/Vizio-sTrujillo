@@ -25,7 +25,7 @@ Route::get('/product/{product}', [ProductController::class, 'show'])->name('prod
 // 2. RUTAS QUE REQUIEREN AUTENTICACIÓN Y VERIFICACIÓN DE EMAIL
 // =====================================================
 Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function ()  {
-
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     // ---- CARRITO ----
     Route::get('/cart', [OrderController::class, 'cart'])->name('cart');
     Route::post('/cart/add', [OrderController::class, 'addToCart'])->name('cart.add');
