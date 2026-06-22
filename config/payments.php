@@ -21,5 +21,5 @@ return [
             'cci' => env('INTERBANK_CCI', '00312345678901234567'),
         ],
     ],
-    'delivery_fee' => env('DELIVERY_FEE', 800),
+    'delivery_fee' => env('DELIVERY_FEE', 8),
 ];

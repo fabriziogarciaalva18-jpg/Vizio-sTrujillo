@@ -73,7 +73,7 @@
                         <td>{{ $order->id }}</td>
                         <td>#{{ $order->order_number }}</td>
                         <td>{{ $order->user->name ?? 'N/A' }}</td>
-                        <td>S/. {{ number_format($order->total / 100, 2) }}</td>
+                        <td>S/. {{ number_format($order->total, 2) }}</td>
                         <td>
                             <form action="{{ route('admin.orders.update-status', $order) }}" method="POST" class="d-inline">
                                 @csrf

@@ -17,14 +17,14 @@ class OrderController extends Controller
     {
         $cart = session()->get('cart', []);
         $total = 0;
-        
+
         foreach ($cart as $item) {
             $total += $item['price'] * $item['quantity'];
         }
-        
+
         return view('orders.cart', compact('cart', 'total'));
     }
-    
+
     /**
      * Agregar producto al carrito
      */
@@ -34,12 +34,12 @@ class OrderController extends Controller
             'product_id' => 'required|exists:products,id',
             'quantity' => 'integer|min:1|max:99'
         ]);
-        
+
         $product = Product::findOrFail($request->product_id);
         $quantity = $request->input('quantity', 1);
-        
+
         $cart = session()->get('cart', []);
-        
+
         if (isset($cart[$product->id])) {
             $cart[$product->id]['quantity'] += $quantity;
         } else {
@@ -50,31 +50,31 @@ class OrderController extends Controller
                 'quantity' => $quantity,
             ];
         }
-        
+
         session()->put('cart', $cart);
-        
+
         if ($request->ajax()) {
             return response()->json(['success' => true, 'cart_count' => $this->getCartCount()]);
         }
-        
+
         return redirect()->back()->with('success', $product->name . ' agregado al carrito');
     }
-    
+
     /**
      * Eliminar producto del carrito
      */
     public function removeFromCart($id)
     {
         $cart = session()->get('cart', []);
-        
+
         if (isset($cart[$id])) {
             unset($cart[$id]);
             session()->put('cart', $cart);
         }
-        
+
         return redirect()->route('cart')->with('success', 'Producto eliminado');
     }
-    
+
     /**
      * Actualizar cantidad
      */
@@ -83,39 +83,39 @@ class OrderController extends Controller
         $request->validate([
             'quantity' => 'required|integer|min:1'
         ]);
-        
+
         $cart = session()->get('cart', []);
-        
+
         if (isset($cart[$id])) {
             $cart[$id]['quantity'] = $request->quantity;
             session()->put('cart', $cart);
         }
-        
+
         return redirect()->route('cart');
     }
-    
+
     /**
      * Mostrar checkout (formulario de datos de envío)
      */
     public function checkout()
     {
         $cart = session()->get('cart', []);
-        
+
         if (empty($cart)) {
             return redirect()->route('catalog')->with('error', 'El carrito está vacío');
         }
-        
+
         $subtotal = 0;
         foreach ($cart as $item) {
             $subtotal += $item['price'] * $item['quantity'];
         }
-        
+
         $delivery_fee = config('payments.delivery_fee', 800);
         $total = $subtotal + $delivery_fee;
-        
+
         return view('orders.checkout', compact('cart', 'subtotal', 'delivery_fee', 'total'));
     }
-    
+
     /**
      * Procesar pago y crear pedido SOLO después de confirmar
      */
@@ -137,18 +137,18 @@ public function processPayment(Request $request)
     ]);
 
     $cart = session()->get('cart', []);
-    
+
     if (empty($cart)) {
         return redirect()->route('cart')->with('error', 'El carrito está vacío');
     }
 
-    // Guardar datos del checkout en sesión temporal
+    // Guardar datos del checkout en sesión
     session()->put('checkout_data', $request->all());
-    
-    // Redirigir a la página de pago según el método (USANDO GET)
-    return redirect()->route('payment.process', ['method' => $request->payment_method]);
+
+    // Redirigir a la página de pago según el método (NUEVA RUTA)
+    return redirect()->route('payment.method', ['method' => $request->payment_method]);
 }
-    
+
     /**
      * Crear pedido definitivamente (solo después de confirmar pago)
      */
@@ -158,14 +158,14 @@ public function processPayment(Request $request)
         foreach ($cart as $item) {
             $subtotal += $item['price'] * $item['quantity'];
         }
-        
+
         $deliveryFee = config('payments.delivery_fee', 800);
         $total = $subtotal + $deliveryFee;
-        
+
         $orderNumber = 'VIZ-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
-        
+
         DB::beginTransaction();
-        
+
         try {
             // Crear el pedido
             $order = Order::create([
@@ -185,7 +185,7 @@ public function processPayment(Request $request)
                 'special_instructions' => $checkoutData['special_instructions'] ?? null,
                 'paid_at' => $paymentStatus == 'paid' ? now() : null,
             ]);
-            
+
             // Crear los items del pedido
             foreach ($cart as $item) {
                 OrderItem::create([
@@ -198,17 +198,17 @@ public function processPayment(Request $request)
                     'configuration' => json_encode($item['customizations'] ?? []),
                 ]);
             }
-            
+
             DB::commit();
-            
+
             return $order;
-            
+
         } catch (\Exception $e) {
             DB::rollback();
             throw $e;
         }
     }
-    
+
     private function getCartCount()
     {
         $cart = session()->get('cart', []);
@@ -218,37 +218,37 @@ public function processPayment(Request $request)
         }
         return $count;
     }
-    
+
     public function index()
     {
         $orders = Order::where('user_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         return view('orders.index', compact('orders'));
     }
-    
+
     public function show(Order $order)
     {
         if ($order->user_id !== auth()->id() && !auth()->user()->is_admin) {
             abort(403);
         }
-        
+
         return view('orders.show', compact('order'));
     }
-    
+
     public function cancel(Order $order)
     {
         if ($order->user_id !== auth()->id() && !auth()->user()->is_admin) {
             abort(403);
         }
-        
+
         if (!in_array($order->status, ['pending', 'confirmed'])) {
             return back()->with('error', 'No se puede cancelar este pedido');
         }
-        
+
         $order->update(['status' => 'cancelled']);
-        
+
         return back()->with('success', 'Pedido cancelado correctamente');
     }
 }

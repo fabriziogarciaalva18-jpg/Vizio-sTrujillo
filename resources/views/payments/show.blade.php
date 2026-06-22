@@ -31,7 +31,7 @@
                 @endif
 
                 <div class="mt-4">
-                    <p><strong>Total a pagar:</strong> <span class="text-success fw-bold">S/. {{ number_format($total / 100, 2) }}</span></p>
+                    <p><strong>Total a pagar:</strong> <span class="text-success fw-bold">S/. {{ number_format($total , 2) }}</span></p>
                 </div>
             </div>
         </div>

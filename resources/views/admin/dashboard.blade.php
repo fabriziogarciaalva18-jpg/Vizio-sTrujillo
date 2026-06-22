@@ -148,7 +148,7 @@
                             <tr>
                                 <td class="fw-semibold">#{{ substr($order->order_number, -8) }}</td>
                                 <td>{{ $order->user->name ?? 'N/A' }}</td>
-                                <td>S/. {{ number_format($order->total / 100, 2) }}</td>
+                                <td>S/. {{ number_format($order->total, 2) }}</td>
                                 <td>
                                     @php
                                         $statusClass = match($order->status) {

@@ -30,7 +30,7 @@
                     <tr>
                         <td>#{{ $order->order_number }}</td>
                         <td>{{ $order->user->name ?? 'N/A' }}</td>
-                        <td>S/. {{ number_format($order->total / 100, 2) }}</td>
+                        <td>S/. {{ number_format($order->total, 2) }}</td>
                         <td>{{ strtoupper($order->payment_method) }}</td>
                         <td>{{ $order->payment_reference ?? '-' }}</td>
                         <td>

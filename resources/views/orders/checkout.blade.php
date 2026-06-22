@@ -15,7 +15,7 @@
         foreach ($cart as $item) {
             $subtotal += $item['price'] * $item['quantity'];
         }
-        $delivery_fee = 800;
+        $delivery_fee = 8;
         $total = $subtotal + $delivery_fee;
     @endphp
 
