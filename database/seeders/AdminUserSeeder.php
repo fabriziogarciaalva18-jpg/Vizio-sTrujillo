@@ -20,6 +20,6 @@ class AdminUserSeeder extends Seeder
             ]
         );
         
-        $this->command->info('Admin user created: admin@vizio.pe / admin123');
+        $this->command->info('Admin user created: admin@vizios.pe / admin123');
     }
 }

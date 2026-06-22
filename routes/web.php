@@ -8,6 +8,7 @@ use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Middleware\CheckUserActive;
 use Illuminate\Support\Facades\Route;
 
 // =====================================================
@@ -23,7 +24,7 @@ Route::get('/product/{product}', [ProductController::class, 'show'])->name('prod
 // =====================================================
 // 2. RUTAS QUE REQUIEREN AUTENTICACIÓN Y VERIFICACIÓN DE EMAIL
 // =====================================================
-Route::middleware(['auth', 'verified','active'])->group(function () {
+Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function ()  {
 
     // ---- CARRITO ----
     Route::get('/cart', [OrderController::class, 'cart'])->name('cart');
