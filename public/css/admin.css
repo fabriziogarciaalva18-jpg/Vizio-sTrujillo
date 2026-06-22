@@ -1,0 +1,157 @@
+/* ============================================
+   ADMIN DASHBOARD - ESTILO RETRO VIZIO'S
+   ============================================ */
+
+/* Stats Cards */
+.stat-card-retro {
+    background: var(--white);
+    border: 1px solid var(--gray-100);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all var(--transition);
+}
+
+.stat-card-retro:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--gray-200);
+}
+
+.stat-icon-retro {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--white);
+}
+
+.stat-info-retro h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin: 0;
+    color: var(--black);
+}
+
+.stat-info-retro p {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin: 0;
+}
+
+/* Admin Cards */
+.admin-card-retro {
+    background: var(--white);
+    border: 1px solid var(--gray-100);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.card-header-retro {
+    padding: 1rem 1.25rem;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Admin Tables */
+.admin-table-retro {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table-retro th {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    background: var(--white);
+    padding: 0.85rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.admin-table-retro td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--gray-50);
+    color: var(--gray-600);
+    font-size: 0.8rem;
+}
+
+.admin-table-retro tr:hover td {
+    background: var(--gray-50);
+}
+
+/* List Group Items Retro */
+.list-group-item-retro {
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--gray-100);
+    transition: background var(--transition);
+}
+
+.list-group-item-retro:hover {
+    background: var(--gray-50);
+}
+
+.list-group-item-retro:last-child {
+    border-bottom: none;
+}
+
+/* Status Badges (unificados con el frontend) */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    border-radius: 999px;
+}
+
+.status-pending {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.status-confirmed {
+    background: #E0F2FE;
+    color: #075985;
+}
+
+.status-preparing {
+    background: #E0E7FF;
+    color: #3730A3;
+}
+
+.status-ready {
+    background: #FCE7F3;
+    color: #9D174D;
+}
+
+.status-delivering {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.status-delivered {
+    background: #DCFCE7;
+    color: #166534;
+}
+
+.status-cancelled {
+    background: var(--gray-100);
+    color: var(--gray-500);
+}
