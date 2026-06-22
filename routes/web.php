@@ -11,7 +11,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use Illuminate\Support\Facades\Route;
 
 // =====================================================
-// 1. RUTAS PÚBLICAS
+// 1. RUTAS PÚBLICAS (no requieren autenticación ni verificación)
 // =====================================================
 Route::get('/', function () {
     return view('home');
@@ -21,9 +21,9 @@ Route::get('/catalog', [ProductController::class, 'index'])->name('catalog');
 Route::get('/product/{product}', [ProductController::class, 'show'])->name('products.show');
 
 // =====================================================
-// 2. RUTAS AUTENTICADAS (CLIENTES)
+// 2. RUTAS QUE REQUIEREN AUTENTICACIÓN Y VERIFICACIÓN DE EMAIL
 // =====================================================
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
 
     // ---- CARRITO ----
     Route::get('/cart', [OrderController::class, 'cart'])->name('cart');
