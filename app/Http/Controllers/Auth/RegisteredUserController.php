@@ -35,12 +35,12 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        // 🔥 ESTO ENVÍA EL CORREO DE VERIFICACIÓN
         event(new Registered($user));
 
-        // Iniciar sesión automáticamente
         Auth::login($user);
 
-        // ✅ REDIRIGIR A LA PÁGINA DE INICIO (NO a dashboard)
-        return redirect()->route('home');
+        // 🔥 REDIRIGIR A LA PÁGINA DE VERIFICACIÓN (NO a home)
+        return redirect()->route('verification.notice');
     }
 }
