@@ -15,7 +15,6 @@
 
     <!-- FILTROS -->
     <div class="admin-card-retro mb-4 p-3">
-        
         <form action="{{ route('admin.orders') }}" method="GET" class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label class="form-label"><i class="bi bi-search"></i> Buscar</label>
