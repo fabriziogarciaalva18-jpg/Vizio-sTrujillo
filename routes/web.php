@@ -74,7 +74,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Cancelar un pedido desde la página de pago
     Route::delete('/payment/{order}/cancel', [PaymentController::class, 'cancelOrder'])->name('payment.cancel');
-
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders');
+    // ...
+});
     // ---- PERFIL ----
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -84,6 +87,7 @@ Route::middleware(['auth'])->group(function () {
 
     // ---- ADMIN (verificación dentro del controlador) ----
     Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders');
         Route::put('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');

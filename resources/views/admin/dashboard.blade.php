@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container-fluid px-4">
-    <!-- Header con estilo retro -->
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
             <h1 style="font-family: 'DM Serif Display', serif; font-size: 1.75rem; letter-spacing: -0.5px; margin: 0;">
@@ -21,7 +21,7 @@
         </div>
     </div>
 
-    <!-- Stats Cards - Estilo retro unificado -->
+    <!-- Stats Cards -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
             <div class="stat-card-retro">
@@ -117,9 +117,8 @@
         </div>
     </div>
 
-    <!-- Charts and Tables -->
+    <!-- Recent Orders & Inactive Products -->
     <div class="row g-4">
-        <!-- Recent Orders -->
         <div class="col-lg-8">
             <div class="admin-card-retro">
                 <div class="card-header-retro">
@@ -159,6 +158,7 @@
                                             'delivering' => 'status-delivering',
                                             'delivered' => 'status-delivered',
                                             'cancelled' => 'status-cancelled',
+                                            'rejected' => 'status-rejected',
                                             default => 'status-pending'
                                         };
                                     @endphp
@@ -176,6 +176,10 @@
                                         <span class="status-badge" style="background: #FEF3C7; color: #92400E;">
                                             <i class="bi bi-clock-history"></i> En revisión
                                         </span>
+                                    @elseif($order->payment_status == 'rejected')
+                                        <span class="status-badge" style="background: #FEE2E2; color: #991B1B;">
+                                            <i class="bi bi-x-circle-fill"></i> Rechazado
+                                        </span>
                                     @else
                                         <span class="status-badge" style="background: var(--gray-100); color: var(--gray-500);">
                                             <i class="bi bi-hourglass-split"></i> Pendiente
@@ -191,7 +195,6 @@
             </div>
         </div>
 
-        <!-- Inactive Products -->
         <div class="col-lg-4">
             <div class="admin-card-retro">
                 <div class="card-header-retro">
@@ -199,7 +202,7 @@
                         <i class="bi bi-box-seam" style="color: var(--gray-400);"></i>
                         <h5 class="mb-0" style="font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;">Productos Inactivos</h5>
                     </div>
-                    <a href="{{ route('admin.products.index') }}" class="filter-btn"style="font-size: 0.65rem; padding: 0.3rem 0.8rem;">
+                    <a href="{{ route('admin.products.index') }}" class="filter-btn" style="font-size: 0.65rem; padding: 0.3rem 0.8rem;">
                         <i class="bi bi-gear"></i> Gestionar
                     </a>
                 </div>

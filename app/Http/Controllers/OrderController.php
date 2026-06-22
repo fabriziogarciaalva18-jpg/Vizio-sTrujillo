@@ -117,40 +117,35 @@ class OrderController extends Controller
     }
 
     /**
-     * Procesar pago y crear pedido SOLO después de confirmar
+     * Procesar pago y redirigir a la página de pago según método
      */
-    /**
- * Procesar pago y crear pedido SOLO después de confirmar
- */
-/**
- * Procesar pago y crear pedido SOLO después de confirmar
- */
-public function processPayment(Request $request)
-{
-    $request->validate([
-        'delivery_address' => 'required|string',
-        'district' => 'required|string',
-        'phone' => 'required|string',
-        'delivery_date' => 'required|date|after:today',
-        'payment_method' => 'required|in:yape,plin,transferencia,contraentrega',
-        'special_instructions' => 'nullable|string',
-    ]);
+    public function processPayment(Request $request)
+    {
+        $request->validate([
+            'delivery_address' => 'required|string',
+            'district' => 'required|string',
+            'phone' => 'required|string',
+            'delivery_date' => 'required|date|after:today',
+            'payment_method' => 'required|in:yape,plin,transferencia,contraentrega',
+            'special_instructions' => 'nullable|string',
+        ]);
 
-    $cart = session()->get('cart', []);
+        $cart = session()->get('cart', []);
 
-    if (empty($cart)) {
-        return redirect()->route('cart')->with('error', 'El carrito está vacío');
+        if (empty($cart)) {
+            return redirect()->route('cart')->with('error', 'El carrito está vacío');
+        }
+
+        // Guardar datos del checkout en sesión
+        session()->put('checkout_data', $request->all());
+
+        // Redirigir a la página de pago según el método
+        return redirect()->route('payment.method', ['method' => $request->payment_method]);
     }
-
-    // Guardar datos del checkout en sesión
-    session()->put('checkout_data', $request->all());
-
-    // Redirigir a la página de pago según el método (NUEVA RUTA)
-    return redirect()->route('payment.method', ['method' => $request->payment_method]);
-}
 
     /**
      * Crear pedido definitivamente (solo después de confirmar pago)
+     * Este método es llamado desde PaymentController
      */
     public function createOrder($cart, $checkoutData, $paymentStatus = 'pending')
     {
@@ -167,7 +162,6 @@ public function processPayment(Request $request)
         DB::beginTransaction();
 
         try {
-            // Crear el pedido
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'order_number' => $orderNumber,
@@ -186,7 +180,6 @@ public function processPayment(Request $request)
                 'paid_at' => $paymentStatus == 'paid' ? now() : null,
             ]);
 
-            // Crear los items del pedido
             foreach ($cart as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -209,6 +202,9 @@ public function processPayment(Request $request)
         }
     }
 
+    /**
+     * Obtener cantidad de items en el carrito
+     */
     private function getCartCount()
     {
         $cart = session()->get('cart', []);
@@ -219,6 +215,9 @@ public function processPayment(Request $request)
         return $count;
     }
 
+    /**
+     * Listar pedidos del usuario autenticado
+     */
     public function index()
     {
         $orders = Order::where('user_id', auth()->id())
@@ -228,6 +227,9 @@ public function processPayment(Request $request)
         return view('orders.index', compact('orders'));
     }
 
+    /**
+     * Mostrar detalle de un pedido específico (solo si es del usuario o admin)
+     */
     public function show(Order $order)
     {
         if ($order->user_id !== auth()->id() && !auth()->user()->is_admin) {
@@ -237,18 +239,29 @@ public function processPayment(Request $request)
         return view('orders.show', compact('order'));
     }
 
+    /**
+     * Cancelar un pedido (solo si está pendiente o en revisión de pago)
+     * El usuario solo puede cancelar si el pedido está en estado 'pending' o 'pending_review'
+     */
     public function cancel(Order $order)
     {
-        if ($order->user_id !== auth()->id() && !auth()->user()->is_admin) {
+        // Verificar que el pedido pertenece al usuario autenticado
+        if ($order->user_id !== auth()->id()) {
             abort(403);
         }
 
-        if (!in_array($order->status, ['pending', 'confirmed'])) {
-            return back()->with('error', 'No se puede cancelar este pedido');
+        // Solo se puede cancelar si está 'pending' o 'pending_review'
+        if (!in_array($order->status, ['pending', 'pending_review'])) {
+            return back()->with('error', 'No se puede cancelar este pedido porque ya está en proceso o confirmado.');
+        }
+
+        // Si el pago ya está pagado, no se puede cancelar
+        if ($order->payment_status === 'paid') {
+            return back()->with('error', 'No se puede cancelar un pedido ya pagado.');
         }
 
         $order->update(['status' => 'cancelled']);
 
-        return back()->with('success', 'Pedido cancelado correctamente');
+        return back()->with('success', 'Pedido cancelado correctamente.');
     }
 }

@@ -38,7 +38,11 @@ class Order extends Model
     {
         return $this->hasOne(Delivery::class);
     }
-
+public function canBeCancelledByUser()
+{
+    // El usuario puede cancelar si el pedido está pendiente y no ha sido pagado
+    return in_array($this->status, ['pending', 'pending_review']) && $this->payment_status !== 'paid';
+}
     public function cancellation()
     {
         return $this->hasOne(Cancellation::class);
