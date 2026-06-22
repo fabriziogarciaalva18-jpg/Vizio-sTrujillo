@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Product extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'category_id',
+        'name',
+        'slug',
+        'description',
+        'image_url',
+        'product_type',
+        'has_sizes',
+        'has_layers',
+        'has_flavors',
+        'has_fillings',
+        'has_coverings',
+        'base_price',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'base_price' => 'decimal:2',
+        'has_sizes' => 'boolean',
+        'has_layers' => 'boolean',
+        'has_flavors' => 'boolean',
+        'has_fillings' => 'boolean',
+        'has_coverings' => 'boolean',
+        'is_active' => 'boolean',
+    ];
+
+    public function category()
+    {
+        return $this->belongsTo(ProductCategory::class, 'category_id');
+    }
+
+    public function configurations()
+    {
+        return $this->hasMany(ProductConfiguration::class);
+    }
+
+    public function getConfigurationsByType($type)
+    {
+        return $this->configurations()->where('config_type', $type)->orderBy('sort_order')->get();
+    }
+
+    // ACCESOR CORREGIDO - Usa $this->attributes en lugar de propiedad directa
+    public function getImageUrlAttribute()
+    {
+        $image = $this->attributes['image_url'] ?? null;
+
+        if ($image) {
+            if (filter_var($image, FILTER_VALIDATE_URL)) {
+                return $image;
+            }
+            return asset('storage/products/' . $image);
+        }
+
+        return 'https://placehold.co/400x300/F5F3EE/0A0A0A?text=' . urlencode($this->name);
+    }
+}
