@@ -35,9 +35,7 @@
                     <p class="product-desc">{{ Str::limit($product->description, 80) }}</p>
                     <div class="product-price">S/. {{ number_format($product->base_price, 2) }}</div>
 
-                    <!-- ========================================= -->
-                    <!-- BOTONES DE ACCIÓN (con verificación de email) -->
-                    <!-- ========================================= -->
+                    <!-- BOTONES DE ACCIÓN -->
                     <div class="product-actions">
                         @auth
                             @if(auth()->user()->hasVerifiedEmail())
@@ -45,7 +43,7 @@
                                 <a href="{{ url('/product/' . $product->id) }}" class="btn-retro-primary btn-action">
                                     <i class="bi bi-eye"></i> VER
                                 </a>
-                                <!-- Botón AGREGAR como FORMULARIO -->
+                                <!-- Botón AGREGAR -->
                                 <form action="{{ route('cart.add') }}" method="POST" style="display: inline; flex: 1;">
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $product->id }}">
@@ -55,7 +53,7 @@
                                     </button>
                                 </form>
                             @else
-                                <!-- Usuario NO VERIFICADO: botón para verificar correo -->
+                                <!-- Usuario NO VERIFICADO -->
                                 <a href="{{ route('verification.notice') }}" class="btn-retro-warning btn-action" style="width: 100%;">
                                     <i class="bi bi-envelope-exclamation"></i> VERIFICAR CORREO
                                 </a>
@@ -75,13 +73,19 @@
         </div>
         @empty
         <div class="col-12 text-center py-5">
-            <i class="bi bi-emoji-frown" style="font-size: 3rem; color: #9E9890;"></i>
-            <p class="mt-3 text-muted">No hay productos disponibles en este momento.</p>
-            @auth
-                <a href="{{ route('admin.products.index') }}" class="btn-retro-primary mt-2">
-                    <i class="bi bi-plus-circle"></i> Agregar productos
-                </a>
-            @endauth
+            <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 300px;">
+                <i class="bi bi-emoji-frown" style="font-size: 4rem; color: #C4BFB5;"></i>
+                <p class="mt-4 text-muted" style="font-size: 1.1rem; font-weight: 400;">
+                    No hay productos disponibles en este momento.
+                </p>
+                @auth
+                    @if(auth()->user()->is_admin)
+                        <a href="{{ route('admin.products.index') }}" class="btn-retro-primary mt-3">
+                            <i class="bi bi-plus-circle"></i> AGREGAR PRODUCTOS
+                        </a>
+                    @endif
+                @endauth
+            </div>
         </div>
         @endforelse
     </div>
@@ -107,7 +111,7 @@
         });
     });
 
-    // Mostrar notificaciones flash desde la sesión
+    // Mostrar notificaciones flash
     @if(session('success'))
         showNotification('{{ session('success') }}', 'success');
     @endif

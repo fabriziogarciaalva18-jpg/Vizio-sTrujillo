@@ -23,7 +23,7 @@ Route::get('/product/{product}', [ProductController::class, 'show'])->name('prod
 // =====================================================
 // 2. RUTAS QUE REQUIEREN AUTENTICACIÓN Y VERIFICACIÓN DE EMAIL
 // =====================================================
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified','active'])->group(function () {
 
     // ---- CARRITO ----
     Route::get('/cart', [OrderController::class, 'cart'])->name('cart');

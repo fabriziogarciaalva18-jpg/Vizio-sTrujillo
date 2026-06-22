@@ -6,6 +6,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage; 
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -19,7 +20,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'phone',
         'address',
         'is_admin',
-    ];
+        'is_active',
+            ];  
 
     protected $hidden = [
         'password',
@@ -31,6 +33,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean', // <-- Agregar cast
             'is_admin' => 'boolean',
         ];
     }
@@ -82,12 +85,17 @@ class User extends Authenticatable implements MustVerifyEmail
 }
 
     public function getAvatarUrlAttribute()
-    {
-        if ($this->avatar) {
+{
+    if ($this->avatar) {
+        // Verificar si el archivo existe en el disco público
+        if (Storage::disk('public')->exists('avatars/' . $this->avatar)) {
             return asset('storage/avatars/' . $this->avatar);
         }
-
-        $name = urlencode($this->name);
-        return "https://ui-avatars.com/api/?name={$name}&background=0A0A0A&color=FAFAF8&size=100&rounded=true";
+        // Si no existe, devolver el avatar por defecto
     }
+    
+    // Avatar por defecto con iniciales
+    $name = urlencode($this->name);
+    return "https://ui-avatars.com/api/?name={$name}&background=0A0A0A&color=FAFAF8&size=100&rounded=true";
+}
 }
