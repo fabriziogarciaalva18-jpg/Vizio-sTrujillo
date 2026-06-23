@@ -8,12 +8,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
     public function edit(Request $request): View
     {
         return view('profile.edit', [
@@ -21,32 +19,40 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'phone' => [
+                'nullable',
+                'string',
+                'regex:/^[0-9]{9}$/',
+                'max:15',
+            ],
+            'address' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $user->fill($validated);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
         return Redirect::route('profile.edit')->with('success', 'Perfil actualizado correctamente.');
     }
 
-    /**
-     * Delete the user's account.
-     */
-     public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request): RedirectResponse
     {
         $user = $request->user();
 
         $user->update([
             'is_active' => false,
-            'email' => 'inactive_' . $user->id . '_' . $user->email, // Evitar conflicto de email único
+            'email' => 'inactive_' . $user->id . '_' . $user->email,
         ]);
 
         Auth::logout();
