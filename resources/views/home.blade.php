@@ -16,7 +16,7 @@
                     <span class="hero-highlight">hechos con precisión</span>
                 </h1>
                 <p class="hero-desc">
-                    Pastelería artesanal que combina tradición y diseño contemporáneo. 
+                    Pastelería artesanal que combina tradición y diseño contemporáneo.
                     Cada creación está pensada para momentos inolvidables.
                 </p>
                 <div class="hero-buttons">
@@ -51,8 +51,8 @@
                 <h2 class="section-title">← SOBRE VIZIO'S →</h2>
                 <div class="section-divider"></div>
                 <p class="about-text">
-                    Creamos experiencias dulces con ingredientes de alta calidad y un enfoque 
-                    minimalista que resalta los sabores auténticos. Desde 2015, endulzamos 
+                    Creamos experiencias dulces con ingredientes de alta calidad y un enfoque
+                    minimalista que resalta los sabores auténticos. Desde 2015, endulzamos
                     momentos especiales con diseño y precisión.
                 </p>
             </div>
@@ -83,7 +83,7 @@
     </div>
 </section>
 
-<!-- PRODUCTOS DESTACADOS -->
+<!-- PRODUCTOS MÁS VENDIDOS -->
 <section class="featured-section">
     <div class="container">
         <div class="text-center mb-5">
@@ -91,54 +91,39 @@
             <h2 class="section-title">← SELECCIÓN →</h2>
             <div class="section-divider"></div>
         </div>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="https://placehold.co/600x400/F5F3EE/0A0A0A?text=TORTA+BOOMBOX" alt="Torta Boombox">
-                        <span class="product-badge">POPULAR</span>
-                    </div>
-                    <div class="product-body">
-                        <h3 class="product-title">TORTA BOOMBOX</h3>
-                        <p class="product-desc">Diseño geométrico inspirado en los 80s</p>
-                        <div class="product-price">S/ 350</div>
-                        <a href="{{ route('catalog') }}" class="btn-retro-primary w-100">
-                            <i class="bi bi-cart-plus"></i> COMPRAR
-                        </a>
+
+        @if($topProducts->isEmpty())
+            <div class="text-center py-5">
+                <i class="bi bi-emoji-frown" style="font-size: 3rem; color: #C4BFB5;"></i>
+                <p class="mt-3 text-muted">Aún no hay productos destacados. ¡Vuelve pronto!</p>
+                <a href="{{ route('catalog') }}" class="btn-retro-primary mt-2">
+                    <i class="bi bi-grid-3x3-gap-fill"></i> VER CATÁLOGO
+                </a>
+            </div>
+        @else
+            <div class="row g-4">
+                @foreach($topProducts as $product)
+                <div class="col-md-4">
+                    <div class="product-card h-100">
+                        <div class="product-image">
+                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}" loading="lazy">
+                            @if($loop->first)
+                                <span class="product-badge">MÁS VENDIDO</span>
+                            @endif
+                        </div>
+                        <div class="product-body d-flex flex-column">
+                            <h3 class="product-title">{{ $product->name }}</h3>
+                            <p class="product-desc flex-grow-1">{{ Str::limit($product->description, 60) }}</p>
+                            <div class="product-price mt-2">S/. {{ number_format($product->base_price, 2) }}</div>
+                            <a href="{{ route('products.show', $product) }}" class="btn-retro-primary w-100 mt-2">
+                                <i class="bi bi-eye"></i> VER DETALLE
+                            </a>
+                        </div>
                     </div>
                 </div>
+                @endforeach
             </div>
-            <div class="col-md-4">
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="https://placehold.co/600x400/F5F3EE/0A0A0A?text=SPACE+INVADERS" alt="Space Invaders">
-                    </div>
-                    <div class="product-body">
-                        <h3 class="product-title">SPACE INVADERS</h3>
-                        <p class="product-desc">Torta pixel art con sabores intensos</p>
-                        <div class="product-price">S/ 420</div>
-                        <a href="{{ route('catalog') }}" class="btn-retro-primary w-100">
-                            <i class="bi bi-cart-plus"></i> COMPRAR
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="https://placehold.co/600x400/F5F3EE/0A0A0A?text=MESA+DULCE" alt="Mesa Dulce">
-                    </div>
-                    <div class="product-body">
-                        <h3 class="product-title">MESA DULCE</h3>
-                        <p class="product-desc">Selección de postres para eventos</p>
-                        <div class="product-price">S/ 1,250</div>
-                        <a href="{{ route('catalog') }}" class="btn-retro-primary w-100">
-                            <i class="bi bi-cart-plus"></i> COMPRAR
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+        @endif
     </div>
 </section>
 
