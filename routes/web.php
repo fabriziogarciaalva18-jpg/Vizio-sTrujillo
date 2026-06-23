@@ -11,12 +11,9 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Middleware\CheckUserActive;
 use Illuminate\Support\Facades\Route;
 
-// =====================================================
-// 1. RUTAS PÚBLICAS (no requieren autenticación ni verificación)
-// =====================================================
-Route::get('/', function () {
-    return view('home');
-})->name('home');
+use App\Http\Controllers\HomeController;
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/avatar/{filename}', function ($filename) {
     $path = storage_path('app/public/avatars/' . $filename);
