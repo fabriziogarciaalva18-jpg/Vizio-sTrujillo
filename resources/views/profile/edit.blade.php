@@ -9,12 +9,6 @@
         <div class="section-divider"></div>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-retro mb-4" style="background: #DCFCE7; color: #166534; border: 1px solid #86EFAC; border-radius: 8px;">
-            <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
-        </div>
-    @endif
-
     @if(session('error'))
         <div class="alert alert-retro mb-4" style="background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; border-radius: 8px;">
             <i class="bi bi-exclamation-triangle-fill"></i> {{ session('error') }}
@@ -49,7 +43,7 @@
                         opacity: 1;
                     }
                 </style>
-                
+
                 <div class="profile-stats mt-4">
                     <div class="row g-2 justify-content-center">
                         <div class="col-6">
@@ -64,9 +58,9 @@
                                 <span class="stat-label text-muted small text-uppercase">GASTADO</span>
                             </div>
                         </div>
-                    </div>
+                    </div>retro
                 </div>
-                
+
                 <div class="member-since mt-3 pt-2 border-top">
                     <i class="bi bi-calendar-check"></i> Miembro desde {{ auth()->user()->created_at->format('M Y') }}
                 </div>
@@ -75,99 +69,116 @@
 
         <div class="col-lg-8">
             <!-- DATOS PERSONALES -->
-            <div class="profile-card mb-4">
-                <h3 class="profile-section-title">
-                    <i class="bi bi-person-badge"></i> DATOS PERSONALES
-                </h3>
-                
-                <form method="POST" action="{{ route('profile.update') }}">
-                    @csrf
-                    @method('PATCH')
-                    
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">NOMBRE COMPLETO</label>
-                            <input type="text" name="name" class="form-control form-control-retro" value="{{ old('name', auth()->user()->name) }}" required>
-                            @error('name')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label class="form-label">CORREO ELECTRÓNICO</label>
-                            <input type="email" name="email" class="form-control form-control-retro" value="{{ old('email', auth()->user()->email) }}" required>
-                            @error('email')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label class="form-label">TELÉFONO</label>
-                            <input type="tel" name="phone" class="form-control form-control-retro" value="{{ old('phone', auth()->user()->phone) }}" placeholder="Ej: 987654321">
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label class="form-label">DIRECCIÓN</label>
-                            <input type="text" name="address" class="form-control form-control-retro" value="{{ old('address', auth()->user()->address) }}" placeholder="Tu dirección de entrega">
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4 text-center text-md-start">
-                        <button type="submit" class="btn-retro-primary">
-                            <i class="bi bi-save"></i> GUARDAR CAMBIOS
-                        </button>
-                    </div>
-                </form>
+<div class="profile-card mb-4">
+    <h3 class="profile-section-title">
+        <i class="bi bi-person-badge"></i> DATOS PERSONALES
+    </h3>
+
+    <form method="POST" action="{{ route('profile.update') }}">
+        @csrf
+        @method('PATCH')
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">NOMBRE COMPLETO *</label>
+                <input type="text" name="name" class="form-control form-control-retro"
+                       value="{{ old('name', auth()->user()->name) }}" required>
+                @error('name')
+                    <span class="text-danger small">{{ $message }}</span>
+                @enderror
             </div>
 
-            <!-- SEGURIDAD -->
-            <div class="profile-card mb-4">
-                <h3 class="profile-section-title">
-                    <i class="bi bi-lock"></i> SEGURIDAD
-                </h3>
-                
-                <form method="POST" action="{{ route('password.update') }}">
-                    @csrf
-                    @method('PUT')
-                    
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">CONTRASEÑA ACTUAL</label>
-                            <input type="password" name="current_password" class="form-control form-control-retro" required>
-                            @error('current_password')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">NUEVA CONTRASEÑA</label>
-                            <input type="password" name="password" class="form-control form-control-retro" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">CONFIRMAR CONTRASEÑA</label>
-                            <input type="password" name="password_confirmation" class="form-control form-control-retro" required>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4 text-center text-md-start">
-                        <button type="submit" class="btn-retro-primary">
-                            <i class="bi bi-key"></i> CAMBIAR CONTRASEÑA
-                        </button>
-                    </div>
-                </form>
+            <div class="col-md-6">
+                <label class="form-label">CORREO ELECTRÓNICO *</label>
+                <input type="email" name="email" class="form-control form-control-retro"
+                       value="{{ old('email', auth()->user()->email) }}" required>
+                @error('email')
+                    <span class="text-danger small">{{ $message }}</span>
+                @enderror
             </div>
 
+            <div class="col-md-6">
+                <label class="form-label">TELÉFONO</label>
+                <input type="tel" name="phone" class="form-control form-control-retro"
+                       value="{{ old('phone', auth()->user()->phone) }}"
+                       placeholder="Ej: 987654321 (9 dígitos)">
+                @error('phone')
+                    <span class="text-danger small">{{ $message }}</span>
+                @else
+                    <small class="text-muted">Formato: 9 dígitos (ej: 987654321)</small>
+                @enderror
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">DIRECCIÓN</label>
+                <input type="text" name="address" class="form-control form-control-retro"
+                       value="{{ old('address', auth()->user()->address) }}"
+                       placeholder="Calle, número, urbanización, distrito">
+                @error('address')
+                    <span class="text-danger small">{{ $message }}</span>
+                @enderror
+            </div>
+        </div>
+
+        <div class="mt-4 text-center text-md-start">
+            <button type="submit" class="btn-retro-primary">
+                <i class="bi bi-save"></i> GUARDAR CAMBIOS
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- SEGURIDAD -->
+<div class="profile-card mb-4">
+    <h3 class="profile-section-title">
+        <i class="bi bi-lock"></i> SEGURIDAD
+    </h3>
+
+    <form method="POST" action="{{ route('password.update') }}">
+        @csrf
+        @method('PUT')
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">CONTRASEÑA ACTUAL *</label>
+                <input type="password" name="current_password" class="form-control form-control-retro" required>
+                @error('current_password')
+                    <span class="text-danger small">{{ $message }}</span>
+                @enderror
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">NUEVA CONTRASEÑA *</label>
+                <input type="password" name="password" class="form-control form-control-retro" required>
+                <small class="text-muted">Mínimo 8 caracteres, incluir mayúscula, minúscula, número y símbolo.</small>
+                @error('password')
+                    <span class="text-danger small">{{ $message }}</span>
+                @enderror
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">CONFIRMAR CONTRASEÑA *</label>
+                <input type="password" name="password_confirmation" class="form-control form-control-retro" required>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center text-md-start">
+            <button type="submit" class="btn-retro-primary">
+                <i class="bi bi-key"></i> CAMBIAR CONTRASEÑA
+            </button>
+        </div>
+    </form>
+</div>
             <!-- ELIMINAR CUENTA -->
             <div class="profile-card" style="border: 1px solid #FCA5A5;">
                 <h3 class="profile-section-title" style="color: #991B1B;">
                     <i class="bi bi-exclamation-triangle"></i> ZONA DE PELIGRO
                 </h3>
-                
+
                 <p class="text-muted small">
-                    <i class="bi bi-info-circle"></i> 
-                    Al desactivar tu cuenta, tu perfil se marcará como inactivo. 
+                    <i class="bi bi-info-circle"></i>
+                    Al desactivar tu cuenta, tu perfil se marcará como inactivo.
                     Podrás reactivarlo contactando al soporte.
                 </p>
-                
+
                 <button class="btn-retro-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
                     <i class="bi bi-person-x"></i> DESACTIVAR CUENTA
                 </button>

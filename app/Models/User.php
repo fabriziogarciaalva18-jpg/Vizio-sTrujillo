@@ -21,6 +21,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'address',
         'is_admin',
         'is_active',
+        'phone',      // <-- Añadir
+        'address',
             ];
 
     protected $hidden = [
@@ -87,12 +89,11 @@ class User extends Authenticatable implements MustVerifyEmail
 public function getAvatarUrlAttribute()
 {
     if ($this->avatar) {
-        // Verificar si el archivo existe
         if (Storage::disk('public')->exists('avatars/' . $this->avatar)) {
-            // ✅ Usar la ruta alternativa en lugar de storage/avatars
+            // Usar route() correctamente ahora que la ruta tiene nombre
             return route('avatar.serve', ['filename' => $this->avatar]);
         }
-        // Si el archivo no existe, limpiar el campo
+        // Si no existe, limpiar campo
         $this->avatar = null;
         $this->saveQuietly();
     }
