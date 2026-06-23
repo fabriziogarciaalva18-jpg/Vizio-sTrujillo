@@ -24,7 +24,7 @@ Route::get('/avatar/{filename}', function ($filename) {
         return response()->file($path);
     }
     abort(404);
-});
+})->name('avatar.serve');
 
 Route::get('/catalog', [ProductController::class, 'index'])->name('catalog');
 Route::get('/product/{product}', [ProductController::class, 'show'])->name('products.show');
