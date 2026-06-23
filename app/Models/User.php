@@ -6,7 +6,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage; 
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -21,7 +21,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'address',
         'is_admin',
         'is_active',
-            ];  
+            ];
 
     protected $hidden = [
         'password',
@@ -84,17 +84,20 @@ class User extends Authenticatable implements MustVerifyEmail
     $this->notify(new \App\Notifications\VerifyEmailNotification());
 }
 
-    public function getAvatarUrlAttribute()
+public function getAvatarUrlAttribute()
 {
     if ($this->avatar) {
-        // Verificar si el archivo existe en el disco público
+        // Verificar si el archivo existe
         if (Storage::disk('public')->exists('avatars/' . $this->avatar)) {
-            return asset('storage/avatars/' . $this->avatar);
+            // ✅ Usar la ruta alternativa en lugar de storage/avatars
+            return route('avatar.serve', ['filename' => $this->avatar]);
         }
-        // Si no existe, devolver el avatar por defecto
+        // Si el archivo no existe, limpiar el campo
+        $this->avatar = null;
+        $this->saveQuietly();
     }
-    
-    // Avatar por defecto con iniciales
+
+    // Avatar por defecto
     $name = urlencode($this->name);
     return "https://ui-avatars.com/api/?name={$name}&background=0A0A0A&color=FAFAF8&size=100&rounded=true";
 }
