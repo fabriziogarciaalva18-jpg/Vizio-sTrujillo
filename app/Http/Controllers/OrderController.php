@@ -30,6 +30,10 @@ class OrderController extends Controller
      */
     public function addToCart(Request $request)
     {
+         if (!auth()->user()->hasVerifiedEmail()) {
+        return redirect()->route('verification.notice')
+            ->with('error', 'Debes verificar tu correo electrónico para agregar productos al carrito.');
+    }
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'integer|min:1|max:99'

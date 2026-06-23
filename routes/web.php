@@ -8,12 +8,11 @@ use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Middleware\CheckUserActive;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Http\Request;
 
 // =====================================================
-// 1. RUTAS PÚBLICAS
+// 1. RUTAS PÚBLICAS (no requieren autenticación ni verificación)
 // =====================================================
 Route::get('/', function () {
     return view('home');
@@ -23,27 +22,10 @@ Route::get('/catalog', [ProductController::class, 'index'])->name('catalog');
 Route::get('/product/{product}', [ProductController::class, 'show'])->name('products.show');
 
 // =====================================================
-// 2. VERIFICACIÓN DE EMAIL
+// 2. RUTAS QUE REQUIEREN AUTENTICACIÓN Y VERIFICACIÓN DE EMAIL
 // =====================================================
-Route::get('/email/verify', function () {
-    return view('auth.verify-email');
-})->middleware('auth')->name('verification.notice');
-
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-    return redirect('/home');
-})->middleware(['auth', 'signed'])->name('verification.verify');
-
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
-    return back()->with('success', 'Enlace de verificación reenviado');
-})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
-
-// =====================================================
-// 3. RUTAS AUTENTICADAS (CLIENTES)
-// =====================================================
-Route::middleware(['auth'])->group(function () {
-
+Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function ()  {
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     // ---- CARRITO ----
     Route::get('/cart', [OrderController::class, 'cart'])->name('cart');
     Route::post('/cart/add', [OrderController::class, 'addToCart'])->name('cart.add');
@@ -60,24 +42,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 
     // ---- PAGOS ----
-    // Mostrar la página de pago según el método elegido (Yape, Plin, Transferencia, Contraentrega)
     Route::get('/payment/method/{method}', [PaymentController::class, 'showPayment'])->name('payment.method');
-
-    // Subir comprobante (para Yape, Plin, Transferencia)
     Route::post('/payment/voucher', [PaymentController::class, 'uploadVoucher'])->name('payment.voucher');
-
-    // Confirmar pedido contraentrega (no requiere comprobante)
     Route::post('/payment/confirm', [PaymentController::class, 'confirmOrder'])->name('payment.confirm');
-
-    // Admin: marcar pago como pagado
     Route::post('/payment/{order}/mark-paid', [PaymentController::class, 'markAsPaid'])->name('payment.mark-paid');
-
-    // Cancelar un pedido desde la página de pago
     Route::delete('/payment/{order}/cancel', [PaymentController::class, 'cancelOrder'])->name('payment.cancel');
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders');
-    // ...
-});
+
     // ---- PERFIL ----
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -85,11 +55,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::delete('/avatar/remove', [AvatarController::class, 'remove'])->name('avatar.remove');
     Route::put('/password', [App\Http\Controllers\Auth\PasswordController::class, 'update'])->name('password.update');
 
-    // ---- ADMIN (verificación dentro del controlador) ----
+    // ---- ADMIN ----
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders');
+        Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
         Route::put('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
 
         // Productos
@@ -106,6 +76,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 // =====================================================
-// 4. RUTAS DE AUTENTICACIÓN (LARAVEL BREEZE)
+// 3. RUTAS DE AUTENTICACIÓN (LARAVEL BREEZE)
 // =====================================================
 require __DIR__.'/auth.php';

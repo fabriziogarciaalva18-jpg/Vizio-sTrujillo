@@ -35,13 +35,12 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // 🔥 Disparar el evento de registro (esto envía el correo de verificación)
+        // 🔥 ESTO ENVÍA EL CORREO DE VERIFICACIÓN
         event(new Registered($user));
 
-        // 🔥 Autenticar al usuario (opcional, pero si lo haces, redirige a la página de verificación)
         Auth::login($user);
 
-        // 🔥 Redirigir a la página de verificación de correo
-        return redirect(route('verification.notice'));
+        // 🔥 REDIRIGIR A LA PÁGINA DE VERIFICACIÓN (NO a home)
+        return redirect()->route('verification.notice');
     }
 }

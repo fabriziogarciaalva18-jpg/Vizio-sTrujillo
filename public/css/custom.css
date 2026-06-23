@@ -1966,7 +1966,87 @@ h1, h2, h3, h4, h5, h6 {
     background: var(--gray-100) !important;
     color: var(--gray-500) !important;
 }
+.btn-retro-warning {
+    background: #FEF3C7;
+    color: #92400E;
+    border: 1px solid #FDE68A;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
 
+.btn-retro-warning:hover {
+    background: #FDE68A;
+    border-color: #F59E0B;
+}
+/* ============================================
+   VERIFICACIÓN DE EMAIL
+   ============================================ */
+.verify-email-icon {
+    width: 80px;
+    height: 80px;
+    background: #DCFCE7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.verify-email-icon i {
+    font-size: 2.5rem;
+    color: #166534;
+}
+
+.alert-retro {
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+}
+
+.btn-retro-secondary {
+    padding: 0.6rem 2rem;
+    font-size: 0.8rem;
+}
+
+.btn-retro-danger.btn-sm {
+    padding: 0.3rem 1rem;
+    font-size: 0.7rem;
+}
+/* ============================================
+   BOTÓN DE VERIFICACIÓN DE CORREO
+   ============================================ */
+.btn-retro-warning {
+    background: #FEF3C7;
+    color: #92400E;
+    border: 1px solid #FDE68A;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.btn-retro-warning:hover {
+    background: #FDE68A;
+    border-color: #F59E0B;
+    transform: translateY(-1px);
+}
 .stat-card-retro {
     background: var(--white);
     border: 1px solid var(--gray-100);
