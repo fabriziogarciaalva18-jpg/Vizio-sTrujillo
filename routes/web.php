@@ -18,6 +18,14 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
+Route::get('/avatar/{filename}', function ($filename) {
+    $path = storage_path('app/public/avatars/' . $filename);
+    if (file_exists($path)) {
+        return response()->file($path);
+    }
+    abort(404);
+});
+
 Route::get('/catalog', [ProductController::class, 'index'])->name('catalog');
 Route::get('/product/{product}', [ProductController::class, 'show'])->name('products.show');
 
