@@ -9,12 +9,6 @@
         <div class="section-divider"></div>
     </div>
 
-    @if(session('error'))
-        <div class="alert alert-retro mb-4" style="background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; border-radius: 8px;">
-            <i class="bi bi-exclamation-triangle-fill"></i> {{ session('error') }}
-        </div>
-    @endif
-
     <div class="row justify-content-center">
         <div class="col-lg-4 mb-4">
             <div class="profile-card text-center h-100">
