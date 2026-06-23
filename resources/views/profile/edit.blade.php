@@ -52,7 +52,7 @@
                                 <span class="stat-label text-muted small text-uppercase">GASTADO</span>
                             </div>
                         </div>
-                    </div>retro
+                    </div>
                 </div>
 
                 <div class="member-since mt-3 pt-2 border-top">
