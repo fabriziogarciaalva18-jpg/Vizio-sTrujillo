@@ -7,11 +7,22 @@
     <h1 class="section-title" style="font-size: 1.5rem;">← CREAR PERSONALIZACIÓN →</h1>
     <div class="section-divider"></div>
 
+    @if ($errors->any())
+        <div class="alert alert-danger mb-4" style="background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; padding: 1rem; border-radius: 8px;">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="row justify-content-center">
         <div class="col-lg-6">
             <div class="profile-card">
                 <form action="{{ route('admin.customizations.store') }}" method="POST">
                     @csrf
+
                     <div class="mb-3">
                         <label class="form-label">Producto *</label>
                         <select name="product_id" class="form-select form-control-retro" required>
@@ -27,10 +38,8 @@
                         <label class="form-label">Tipo de personalización *</label>
                         <select name="config_type" class="form-select form-control-retro" required>
                             <option value="">Selecciona un tipo</option>
-                            @foreach($types as $type)
-                                <option value="{{ $type }}" {{ old('config_type') == $type ? 'selected' : '' }}>
-                                    {{ ucfirst($type) }}
-                                </option>
+                            @foreach($types as $key => $label)
+                                <option value="{{ $key }}" {{ old('config_type') == $key ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
                         <small class="text-muted">Ej: Tamaño, Sabor, Relleno, Cobertura, Pisos...</small>
@@ -57,7 +66,7 @@
                     </div>
 
                     <div class="mb-3 form-check">
-                        <input type="checkbox" name="is_active" class="form-check-input" id="is_active" {{ old('is_active') ? 'checked' : '' }}>
+                        <input type="checkbox" name="is_active" class="form-check-input" id="is_active" value="1" {{ old('is_active') ? 'checked' : '' }}>
                         <label class="form-check-label" for="is_active">Activa</label>
                     </div>
 

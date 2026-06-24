@@ -70,25 +70,25 @@ $types = [
     }
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'config_type' => 'required|in:size,layers,flavor,filling,covering',
-            'name' => 'required|string|max:255',
-            'price_modifier' => 'nullable|numeric|min:0',
-            'sort_order' => 'nullable|integer|min:0',
-            'is_active' => 'nullable|boolean',
-        ]);
+{
+    $validated = $request->validate([
+        'product_id' => 'required|exists:products,id',
+        'config_type' => 'required|in:size,layers,flavor,filling,covering,shape,color,toppings,message,decoration',
+        'name' => 'required|string|max:255',
+        'price_modifier' => 'nullable|numeric|min:0',
+        'sort_order' => 'nullable|integer|min:0',
+        'is_active' => 'nullable|boolean',
+    ]);
 
-        $validated['is_active'] = $request->has('is_active');
-        $validated['sort_order'] = $request->input('sort_order', 0);
-        $validated['price_modifier'] = $request->input('price_modifier', 0);
+    $validated['is_active'] = $request->has('is_active');
+    $validated['sort_order'] = $request->input('sort_order', 0);
+    $validated['price_modifier'] = $request->input('price_modifier', 0);
 
-        ProductConfiguration::create($validated);
+    ProductConfiguration::create($validated);
 
-        return redirect()->route('admin.customizations.index')
-            ->with('success', 'Personalización creada exitosamente.');
-    }
+    return redirect()->route('admin.customizations.index')
+        ->with('success', 'Personalización creada exitosamente.');
+}
 
     public function edit(ProductConfiguration $customization)
     {
