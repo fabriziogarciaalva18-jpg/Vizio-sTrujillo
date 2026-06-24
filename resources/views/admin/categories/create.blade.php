@@ -43,9 +43,9 @@
                     </div>
 
                     <div class="mb-3 form-check">
-                        <input type="checkbox" name="is_active" class="form-check-input" id="is_active" {{ old('is_active') ? 'checked' : '' }}>
-                        <label class="form-check-label" for="is_active">Activa (visible en el catálogo)</label>
-                    </div>
+    <input type="checkbox" name="is_active" class="form-check-input" id="is_active" value="1" {{ old('is_active') ? 'checked' : '' }}>
+    <label class="form-check-label" for="is_active">Activa (visible en el catálogo)</label>
+</div>
 
                     <div class="text-end">
                         <a href="{{ route('admin.categories.index') }}" class="btn-retro-secondary">Cancelar</a>
