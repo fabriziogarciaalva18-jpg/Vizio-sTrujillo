@@ -29,29 +29,31 @@ class ProductController extends Controller
 
 public function show(Product $product)
 {
-    // Agrupar configuraciones por tipo (de la BD)
-    $configurations = [
-        'size' => $product->configurations()->where('config_type', 'size')->orderBy('sort_order')->get(),
-        'layers' => $product->configurations()->where('config_type', 'layers')->orderBy('sort_order')->get(),
-        'flavor' => $product->configurations()->where('config_type', 'flavor')->orderBy('sort_order')->get(),
-        'filling' => $product->configurations()->where('config_type', 'filling')->orderBy('sort_order')->get(),
-        'covering' => $product->configurations()->where('config_type', 'covering')->orderBy('sort_order')->get(),
-        'shape' => $product->configurations()->where('config_type', 'shape')->orderBy('sort_order')->get(),
-        'color' => $product->configurations()->where('config_type', 'color')->orderBy('sort_order')->get(),
-        'toppings' => $product->configurations()->where('config_type', 'toppings')->orderBy('sort_order')->get(),
-        'decoration' => $product->configurations()->where('config_type', 'decoration')->orderBy('sort_order')->get(),
-    ];
+    // Obtener solo configuraciones activas
+    $configs = $product->configurations()->where('is_active', true)->get();
 
-    // Filtrar solo los tipos que tienen al menos una opción
-    $configurations = array_filter($configurations, function($items) {
-        return $items->isNotEmpty();
-    });
+    // Separar el tipo 'message' del resto
+    $messageConfig = null;
+    $otherConfigs = [];
+
+    foreach ($configs as $config) {
+        if ($config->config_type === 'message') {
+            $messageConfig = $config;
+        } else {
+            $otherConfigs[$config->config_type][] = $config;
+        }
+    }
+
+    // Agrupar por tipo (excepto message)
+    $configurations = [];
+    foreach ($otherConfigs as $type => $items) {
+        $configurations[$type] = collect($items);
+    }
 
     $addons = Addon::where('is_active', true)->get();
 
-    return view('products.show', compact('product', 'configurations', 'addons'));
+    return view('products.show', compact('product', 'configurations', 'addons', 'messageConfig'));
 }
-
     public function filter(Request $request)
     {
         $query = Product::where('is_active', true);

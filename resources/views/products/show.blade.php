@@ -26,10 +26,10 @@
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                    <!-- ========================================= -->
-                    <!-- PERSONALIZACIONES DESDE LA BD            -->
-                    <!-- ========================================= -->
                     <div class="row g-3">
+                        <!-- ========================================= -->
+                        <!-- OPCIONES DE PERSONALIZACIÓN (excepto message) -->
+                        <!-- ========================================= -->
                         @foreach($configurations as $type => $items)
                             @php
                                 $icon = match($type) {
@@ -78,17 +78,26 @@
                         @endforeach
 
                         <!-- ========================================= -->
-                        <!-- MENSAJE PERSONALIZADO (SIEMPRE VISIBLE)  -->
+                        <!-- MENSAJE PERSONALIZADO (solo si existe)   -->
                         <!-- ========================================= -->
+                        @if($messageConfig)
                         <div class="col-12">
-                            <label class="form-label fw-bold"><i class="bi bi-chat-text me-1"></i> MENSAJE PERSONALIZADO</label>
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-chat-text me-1"></i> MENSAJE PERSONALIZADO
+                                @if($messageConfig->price_modifier > 0)
+                                    <span class="badge-price ms-2">+ S/. {{ number_format($messageConfig->price_modifier, 2) }}</span>
+                                @endif
+                            </label>
                             <textarea name="message" class="form-control form-control-retro" rows="2"
                                       placeholder="Escribe el mensaje que quieres en tu torta..."></textarea>
                             <small class="text-muted">Ej: "Feliz Cumpleaños", "Te quiero", etc.</small>
+                            <input type="hidden" name="message_price" value="{{ $messageConfig->price_modifier }}" id="messagePrice">
+                            <input type="hidden" name="message_config_id" value="{{ $messageConfig->id }}">
                         </div>
+                        @endif
 
                         <!-- ========================================= -->
-                        <!-- ADICIONALES (GLOBALES)                  -->
+                        <!-- ADICIONALES (globales)                   -->
                         <!-- ========================================= -->
                         @if(isset($addons) && count($addons) > 0)
                         <div class="col-12">
@@ -111,9 +120,7 @@
                         </div>
                         @endif
 
-                        <!-- ========================================= -->
-                        <!-- CANTIDAD                                 -->
-                        <!-- ========================================= -->
+                        <!-- Cantidad -->
                         <div class="col-12">
                             <label class="form-label fw-bold"><i class="bi bi-hash me-1"></i> CANTIDAD</label>
                             <div class="d-flex align-items-center gap-3">
@@ -125,9 +132,7 @@
                         </div>
                     </div>
 
-                    <!-- ========================================= -->
-                    <!-- TOTAL Y BOTÓN                            -->
-                    <!-- ========================================= -->
+                    <!-- Total y botón -->
                     <hr class="retro-divider mt-4">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <div>
@@ -146,9 +151,6 @@
     </div>
 </div>
 
-<!-- ========================================= -->
-<!-- ESTILOS PARA OPCIONES                      -->
-<!-- ========================================= -->
 <style>
     .custom-option {
         display: inline-flex;
@@ -204,9 +206,6 @@
 
 @push('scripts')
 <script>
-    // =============================================
-    // CÁLCULO DE PRECIO DINÁMICO
-    // =============================================
     function calculatePrice() {
         let basePrice = parseFloat({{ $product->base_price }});
 
@@ -220,23 +219,26 @@
             basePrice += parseFloat(checkbox.dataset.price || 0);
         });
 
+        // Sumar costo del mensaje si existe y hay texto
+        const messageText = document.querySelector('textarea[name="message"]');
+        const messagePrice = parseFloat(document.getElementById('messagePrice')?.value || 0);
+        if (messageText && messageText.value.trim() !== '' && messagePrice > 0) {
+            basePrice += messagePrice;
+        }
+
         const quantity = parseInt(document.getElementById('quantity').value) || 1;
         const total = basePrice * quantity;
 
         document.getElementById('totalPrice').innerHTML = 'S/. ' + total.toFixed(2);
     }
 
-    // =============================================
-    // EVENTOS PARA ACTUALIZAR PRECIO
-    // =============================================
-    document.querySelectorAll('.config-option, .addon-checkbox, #quantity').forEach(el => {
+    // Eventos
+    document.querySelectorAll('.config-option, .addon-checkbox, #quantity, textarea[name="message"]').forEach(el => {
         el.addEventListener('change', calculatePrice);
         el.addEventListener('input', calculatePrice);
     });
 
-    // =============================================
-    // BOTONES DE CANTIDAD
-    // =============================================
+    // Botones de cantidad
     document.getElementById('decrementQty').addEventListener('click', function() {
         const input = document.getElementById('quantity');
         let val = parseInt(input.value) || 1;
@@ -252,9 +254,6 @@
         input.dispatchEvent(new Event('change'));
     });
 
-    // =============================================
-    // INICIALIZAR PRECIO
-    // =============================================
     calculatePrice();
 </script>
 @endpush
