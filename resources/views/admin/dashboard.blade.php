@@ -124,54 +124,54 @@
         </div>
     </div>
 
-<!-- ========================================== -->
-<!-- FILA 3: ACCESO RÁPIDO A CATEGORÍAS Y PERSONALIZACIONES -->
-<!-- ========================================== -->
-<div class="row g-4 mb-5">
-    <!-- Categorías -->
-    <div class="col-md-6">
-        <div class="admin-card-retro">
-            <div class="card-header-retro">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-tags" style="color: var(--gray-400);"></i>
-                    <h5 class="mb-0" style="font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;">
-                        Categorías
-                    </h5>
+    <!-- ========================================== -->
+    <!-- FILA 3: ACCESO RÁPIDO A CATEGORÍAS Y PERSONALIZACIONES -->
+    <!-- ========================================== -->
+    <div class="row g-4 mb-5">
+        <!-- Categorías -->
+        <div class="col-md-6">
+            <div class="admin-card-retro">
+                <div class="card-header-retro">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-tags" style="color: var(--gray-400);"></i>
+                        <h5 class="mb-0" style="font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;">
+                            Categorías
+                        </h5>
+                    </div>
+                    <a href="{{ route('admin.categories.index') }}" class="filter-btn" style="font-size: 0.65rem; padding: 0.3rem 0.8rem;">
+                        <i class="bi bi-gear"></i> Gestionar
+                    </a>
                 </div>
-                <a href="{{ route('admin.categories') }}" class="filter-btn" style="font-size: 0.65rem; padding: 0.3rem 0.8rem;">
-                    <i class="bi bi-gear"></i> Gestionar
-                </a>
-            </div>
-            <div class="card-body py-3 px-4">
-                <p class="text-muted small mb-0">
-                    <i class="bi bi-info-circle"></i> Administra las categorías de productos
-                </p>
+                <div class="card-body py-3 px-4">
+                    <p class="text-muted small mb-0">
+                        <i class="bi bi-info-circle"></i> Administra las categorías de productos
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Personalizaciones -->
-    <div class="col-md-6">
-        <div class="admin-card-retro">
-            <div class="card-header-retro">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-palette" style="color: var(--gray-400);"></i>
-                    <h5 class="mb-0" style="font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;">
-                        Personalizaciones
-                    </h5>
+        <!-- Personalizaciones -->
+        <div class="col-md-6">
+            <div class="admin-card-retro">
+                <div class="card-header-retro">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-palette" style="color: var(--gray-400);"></i>
+                        <h5 class="mb-0" style="font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;">
+                            Personalizaciones
+                        </h5>
+                    </div>
+                    <a href="{{ route('admin.customizations.index') }}" class="filter-btn" style="font-size: 0.65rem; padding: 0.3rem 0.8rem;">
+                        <i class="bi bi-gear"></i> Gestionar
+                    </a>
                 </div>
-                <a href="{{ route('admin.customizations') }}" class="filter-btn" style="font-size: 0.65rem; padding: 0.3rem 0.8rem;">
-                    <i class="bi bi-gear"></i> Gestionar
-                </a>
-            </div>
-            <div class="card-body py-3 px-4">
-                <p class="text-muted small mb-0">
-                    <i class="bi bi-info-circle"></i> Administra tamaños, sabores, rellenos...
-                </p>
+                <div class="card-body py-3 px-4">
+                    <p class="text-muted small mb-0">
+                        <i class="bi bi-info-circle"></i> Administra tamaños, sabores, rellenos...
+                    </p>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- ========================================== -->
     <!-- FILA 4: PEDIDOS RECIENTES Y PRODUCTOS INACTIVOS -->
@@ -183,7 +183,9 @@
                 <div class="card-header-retro">
                     <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-receipt" style="color: var(--gray-400);"></i>
-                        <h5 class="mb-0" style="font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;">Pedidos Recientes</h5>
+                        <h5 class="mb-0" style="font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;">
+                            Pedidos Recientes
+                        </h5>
                     </div>
                     <a href="{{ route('admin.orders') }}" class="filter-btn" style="font-size: 0.65rem; padding: 0.3rem 0.8rem;">
                         <i class="bi bi-arrow-right"></i> Ver todos
@@ -260,7 +262,9 @@
                 <div class="card-header-retro">
                     <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-box-seam" style="color: var(--gray-400);"></i>
-                        <h5 class="mb-0" style="font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;">Productos Inactivos</h5>
+                        <h5 class="mb-0" style="font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;">
+                            Productos Inactivos
+                        </h5>
                     </div>
                     <a href="{{ route('admin.products.index') }}" class="filter-btn" style="font-size: 0.65rem; padding: 0.3rem 0.8rem;">
                         <i class="bi bi-gear"></i> Gestionar
