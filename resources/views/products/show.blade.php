@@ -28,7 +28,7 @@
 
                     <div class="row g-3">
                         <!-- ========================================= -->
-                        <!-- OPCIONES DE PERSONALIZACIÓN (excepto message) -->
+                        <!-- OPCIONES DE PERSONALIZACIÓN (opcionales) -->
                         <!-- ========================================= -->
                         @foreach($configurations as $type => $items)
                             @php
@@ -59,26 +59,37 @@
                             @endphp
 
                             <div class="col-12">
-                                <label class="form-label fw-bold"><i class="bi {{ $icon }} me-1"></i> {{ $label }}</label>
-                                <div class="d-flex flex-wrap gap-2">
-                                    @foreach($items as $item)
-                                    <label class="custom-option">
-                                        <input type="radio" name="configurations[{{ $type }}]" value="{{ $item->id }}"
-                                               data-price="{{ $item->price_modifier }}" class="config-option">
-                                        <span class="option-label">
-                                            {{ $item->name }}
-                                            @if($item->price_modifier > 0)
-                                                <span class="badge-price">+ S/. {{ number_format($item->price_modifier, 2) }}</span>
-                                            @endif
-                                        </span>
+                                <!-- Checkbox para activar/desactivar el grupo -->
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <input type="checkbox" class="group-toggle" data-group="{{ $type }}" id="toggle_{{ $type }}">
+                                    <label class="form-label fw-bold mb-0" for="toggle_{{ $type }}" style="cursor: pointer;">
+                                        <i class="bi {{ $icon }} me-1"></i> {{ $label }}
                                     </label>
-                                    @endforeach
+                                    <span class="text-muted small ms-auto" id="price_summary_{{ $type }}"></span>
+                                </div>
+
+                                <!-- Opciones del grupo (inicialmente ocultas) -->
+                                <div class="group-options" id="options_{{ $type }}" style="display: none; padding-left: 1.5rem;">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach($items as $item)
+                                        <label class="custom-option">
+                                            <input type="radio" name="configurations[{{ $type }}]" value="{{ $item->id }}"
+                                                   data-price="{{ $item->price_modifier }}" class="config-option" disabled>
+                                            <span class="option-label">
+                                                {{ $item->name }}
+                                                @if($item->price_modifier > 0)
+                                                    <span class="badge-price">+ S/. {{ number_format($item->price_modifier, 2) }}</span>
+                                                @endif
+                                            </span>
+                                        </label>
+                                        @endforeach
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
 
                         <!-- ========================================= -->
-                        <!-- MENSAJE PERSONALIZADO (solo si existe)   -->
+                        <!-- MENSAJE PERSONALIZADO (siempre opcional)  -->
                         <!-- ========================================= -->
                         @if($messageConfig)
                         <div class="col-12">
@@ -201,17 +212,52 @@
         color: var(--black);
         font-family: 'DM Serif Display', serif;
     }
+    .group-options {
+        padding-left: 1.5rem;
+        border-left: 2px dashed var(--gray-200);
+        margin-bottom: 0.5rem;
+    }
 </style>
 @endsection
 
 @push('scripts')
 <script>
+    // =============================================
+    // TOGGLE DE GRUPOS DE PERSONALIZACIÓN
+    // =============================================
+    document.querySelectorAll('.group-toggle').forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const group = this.dataset.group;
+            const optionsDiv = document.getElementById('options_' + group);
+            const radios = optionsDiv.querySelectorAll('.config-option');
+
+            if (this.checked) {
+                optionsDiv.style.display = 'block';
+                radios.forEach(r => r.disabled = false);
+            } else {
+                optionsDiv.style.display = 'none';
+                radios.forEach(r => {
+                    r.checked = false;
+                    r.disabled = true;
+                });
+            }
+            calculatePrice();
+        });
+    });
+
+    // =============================================
+    // CÁLCULO DE PRECIO DINÁMICO
+    // =============================================
     function calculatePrice() {
         let basePrice = parseFloat({{ $product->base_price }});
 
-        // Sumar configuraciones seleccionadas
-        document.querySelectorAll('.config-option:checked').forEach(option => {
-            basePrice += parseFloat(option.dataset.price || 0);
+        // Sumar configuraciones seleccionadas (solo de grupos activos)
+        document.querySelectorAll('.group-toggle:checked').forEach(toggle => {
+            const group = toggle.dataset.group;
+            const checkedRadio = document.querySelector(`input[name="configurations[${group}"]:checked`);
+            if (checkedRadio) {
+                basePrice += parseFloat(checkedRadio.dataset.price || 0);
+            }
         });
 
         // Sumar adicionales seleccionados
@@ -232,13 +278,17 @@
         document.getElementById('totalPrice').innerHTML = 'S/. ' + total.toFixed(2);
     }
 
-    // Eventos
+    // =============================================
+    // EVENTOS PARA ACTUALIZAR PRECIO
+    // =============================================
     document.querySelectorAll('.config-option, .addon-checkbox, #quantity, textarea[name="message"]').forEach(el => {
         el.addEventListener('change', calculatePrice);
         el.addEventListener('input', calculatePrice);
     });
 
-    // Botones de cantidad
+    // =============================================
+    // BOTONES DE CANTIDAD
+    // =============================================
     document.getElementById('decrementQty').addEventListener('click', function() {
         const input = document.getElementById('quantity');
         let val = parseInt(input.value) || 1;
@@ -254,6 +304,9 @@
         input.dispatchEvent(new Event('change'));
     });
 
+    // =============================================
+    // INICIALIZAR PRECIO
+    // =============================================
     calculatePrice();
 </script>
 @endpush
