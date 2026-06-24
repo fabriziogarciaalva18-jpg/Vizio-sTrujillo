@@ -24,17 +24,6 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Ícono visual</label>
-                        <div class="input-group">
-                            <span class="input-group-text" style="background: var(--gray-50); font-size: 1.2rem;">
-                                <i class="{{ old('icon', 'bi-tag') }}"></i>
-                            </span>
-                            <input type="text" name="icon" class="form-control form-control-retro" value="{{ old('icon') }}" placeholder="Ej: bi-cake, bi-cup-straw, bi-cookie">
-                        </div>
-                        <small class="text-muted">Escribe el nombre de un icono de <a href="https://icons.getbootstrap.com/" target="_blank">Bootstrap Icons</a> (ej: bi-star, bi-heart, bi-cup-straw)</small>
-                    </div>
-
-                    <div class="mb-3">
                         <label class="form-label">Posición de visualización</label>
                         <input type="number" name="sort_order" class="form-control form-control-retro" value="{{ old('sort_order', 0) }}" placeholder="0 = primero, 1 = segundo...">
                         <small class="text-muted">Define el orden en que aparecerán las categorías en el catálogo.</small>

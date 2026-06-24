@@ -27,7 +27,6 @@
                     <tr>
                         <th>#</th>
                         <th>Nombre</th>
-                        <th>Slug</th>
                         <th>Descripción</th>
                         <th>Orden</th>
                         <th>Estado</th>
@@ -39,8 +38,7 @@
                     <tr>
                         <td>{{ $cat->id }}</td>
                         <td>{{ $cat->name }}</td>
-                        <td>{{ $cat->slug }}</td>
-                        <td>{{ Str::limit($cat->description, 30) }}</td>
+                        <td>{{ Str::limit($cat->description, 40) }}</td>
                         <td>{{ $cat->sort_order }}</td>
                         <td>
                             <form action="{{ route('admin.categories.toggle-status', $cat) }}" method="POST" style="display:inline;">
@@ -65,7 +63,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center py-4">No hay categorías registradas.</td></tr>
+                    <tr><td colspan="6" class="text-center py-4">No hay categorías registradas.</td></tr>
                     @endforelse
                 </tbody>
             </table>
