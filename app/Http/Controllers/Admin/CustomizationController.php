@@ -36,15 +36,36 @@ class CustomizationController extends Controller  implements HasMiddleware
 
         $configurations = $query->orderBy('product_id')->orderBy('sort_order')->get();
         $products = Product::where('is_active', true)->orderBy('name')->get();
-        $types = ['size', 'layers', 'flavor', 'filling', 'covering'];
-
+$types = [
+            'size' => 'Tamaño',
+            'layers' => 'Número de pisos',
+            'flavor' => 'Sabor',
+            'filling' => 'Relleno',
+            'covering' => 'Cobertura',
+            'shape' => 'Forma',
+            'color' => 'Color',
+            'toppings' => 'Toppings',
+            'message' => 'Mensaje personalizado',
+            'decoration' => 'Decoración adicional',
+        ];
         return view('admin.customizations.index', compact('configurations', 'products', 'types'));
     }
 
     public function create()
     {
         $products = Product::where('is_active', true)->orderBy('name')->get();
-        $types = ['size', 'layers', 'flavor', 'filling', 'covering'];
+        $types = [
+            'size' => 'Tamaño',
+            'layers' => 'Número de pisos',
+            'flavor' => 'Sabor',
+            'filling' => 'Relleno',
+            'covering' => 'Cobertura',
+            'shape' => 'Forma',
+            'color' => 'Color',
+            'toppings' => 'Toppings',
+            'message' => 'Mensaje personalizado',
+            'decoration' => 'Decoración adicional',
+        ];
         return view('admin.customizations.create', compact('products', 'types'));
     }
 
