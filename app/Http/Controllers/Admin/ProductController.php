@@ -11,7 +11,6 @@ use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-
     private function checkAdmin()
     {
         if (!auth()->check() || !auth()->user()->is_admin) {
@@ -19,14 +18,12 @@ class ProductController extends Controller
         }
     }
 
-        public function index()
-{
-    $this->checkAdmin();
-    $products = Product::with('category')->latest()->paginate(15);
-    $categories = ProductCategory::where('is_active', true)->orderBy('sort_order')->get();
-    return view('admin.products.index', compact('products', 'categories'));
-}
-
+    public function index()
+    {
+        $this->checkAdmin();
+        $products = Product::with('category')->latest()->paginate(15);
+        return view('admin.products.index', compact('products'));
+    }
 
     public function create()
     {
@@ -40,20 +37,16 @@ class ProductController extends Controller
         $this->checkAdmin();
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'category_id' => 'required|exists:product_categories,id',
-            'description' => 'required|string',
-            'base_price' => 'required|numeric|min:0',
-            'product_type' => 'required|in:simple,configurable,catering',
-            'image_url' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'name'          => 'required|string|max:255',
+            'category_id'   => 'required|exists:product_categories,id',
+            'description'   => 'required|string',
+            'base_price'    => 'required|numeric|min:0',
+            'product_type'  => 'required|in:simple,configurable,catering',
+            'image_url'     => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'is_active'     => 'nullable|boolean',
         ]);
 
-        // Booleanos
-        $validated['has_sizes'] = $request->has('has_sizes');
-        $validated['has_layers'] = $request->has('has_layers');
-        $validated['has_flavors'] = $request->has('has_flavors');
-        $validated['has_fillings'] = $request->has('has_fillings');
-        $validated['has_coverings'] = $request->has('has_coverings');
+        // ✅ Asignar 'is_active' desde el checkbox (value="1")
         $validated['is_active'] = $request->has('is_active');
 
         // Slug único
@@ -71,10 +64,13 @@ class ProductController extends Controller
             $filename = time() . '_' . $file->getClientOriginalName();
             $file->storeAs('products', $filename, 'public');
             $validated['image_url'] = $filename;
+        } else {
+            unset($validated['image_url']);
         }
 
-        // EL PRECIO SE GUARDA TAL CUAL (en soles)
-        // No se multiplica por 100
+        // ❌ Eliminados los campos de personalización (se gestionan en su propio menú)
+        // Ya no se asignan has_sizes, has_layers, etc.
+
         Product::create($validated);
 
         return redirect()->route('admin.products.index')
@@ -93,20 +89,15 @@ class ProductController extends Controller
         $this->checkAdmin();
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'category_id' => 'required|exists:product_categories,id',
-            'description' => 'required|string',
-            'base_price' => 'required|numeric|min:0',
-            'product_type' => 'required|in:simple,configurable,catering',
-            'image_url' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'name'          => 'required|string|max:255',
+            'category_id'   => 'required|exists:product_categories,id',
+            'description'   => 'required|string',
+            'base_price'    => 'required|numeric|min:0',
+            'product_type'  => 'required|in:simple,configurable,catering',
+            'image_url'     => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'is_active'     => 'nullable|boolean',
         ]);
 
-        // Booleanos
-        $validated['has_sizes'] = $request->has('has_sizes');
-        $validated['has_layers'] = $request->has('has_layers');
-        $validated['has_flavors'] = $request->has('has_flavors');
-        $validated['has_fillings'] = $request->has('has_fillings');
-        $validated['has_coverings'] = $request->has('has_coverings');
         $validated['is_active'] = $request->has('is_active');
 
         // Slug si cambió el nombre
@@ -122,16 +113,19 @@ class ProductController extends Controller
 
         // Imagen
         if ($request->hasFile('image_url')) {
-            if ($product->image_url) {
+            if ($product->image_url && !filter_var($product->image_url, FILTER_VALIDATE_URL)) {
                 Storage::disk('public')->delete('products/' . $product->image_url);
             }
             $file = $request->file('image_url');
             $filename = time() . '_' . $file->getClientOriginalName();
             $file->storeAs('products', $filename, 'public');
             $validated['image_url'] = $filename;
+        } else {
+            unset($validated['image_url']);
         }
 
-        // EL PRECIO SE ACTUALIZA TAL CUAL (en soles)
+        // ❌ Eliminados los campos de personalización
+
         $product->update($validated);
 
         return redirect()->route('admin.products.index')
@@ -141,7 +135,7 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $this->checkAdmin();
-        if ($product->image_url) {
+        if ($product->image_url && !filter_var($product->image_url, FILTER_VALIDATE_URL)) {
             Storage::disk('public')->delete('products/' . $product->image_url);
         }
         $product->delete();
