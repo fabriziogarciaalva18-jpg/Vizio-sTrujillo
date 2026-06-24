@@ -3,6 +3,7 @@
 @section('title', 'Gestionar Categorías')
 
 @section('content')
+
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="section-title" style="font-size: 1.5rem;">← CATEGORÍAS →</h1>

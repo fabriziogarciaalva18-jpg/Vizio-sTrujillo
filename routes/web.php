@@ -71,7 +71,7 @@ Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function 
     // Categorías
         Route::resource('categories', CategoryController::class)->except(['show']);
         Route::patch('categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
-
+        Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
     // Personalizaciones
         Route::resource('customizations', CustomizationController::class)->except(['show']);
         Route::patch('customizations/{customization}/toggle-status', [CustomizationController::class, 'toggleStatus'])->name('customizations.toggle-status');
