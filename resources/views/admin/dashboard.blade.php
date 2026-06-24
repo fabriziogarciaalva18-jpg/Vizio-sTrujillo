@@ -129,7 +129,7 @@
     <!-- ========================================== -->
     <div class="row g-4 mb-5">
         <div class="col-md-6">
-            <a href="{{ route('admin.categories') }}" class="text-decoration-none">
+            <a href="{{ route('admin.categories.index') }}" class="text-decoration-none">
                 <div class="stat-card-retro text-center p-4" style="cursor: pointer; transition: all 0.2s;">
                     <i class="bi bi-tags" style="font-size: 2.5rem; color: #166534;"></i>
                     <h4 class="mt-2">Categorías</h4>
@@ -138,7 +138,7 @@
             </a>
         </div>
         <div class="col-md-6">
-            <a href="{{ route('admin.customizations') }}" class="text-decoration-none">
+            <a href="{{ route('admin.customizations.index') }}" class="text-decoration-none">
                 <div class="stat-card-retro text-center p-4" style="cursor: pointer; transition: all 0.2s;">
                     <i class="bi bi-palette" style="font-size: 2.5rem; color: #92400E;"></i>
                     <h4 class="mt-2">Personalizaciones</h4>
