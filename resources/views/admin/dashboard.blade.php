@@ -124,29 +124,54 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- FILA 3: ACCESO RÁPIDO A CATEGORÍAS Y PERSONALIZACIONES -->
-    <!-- ========================================== -->
-    <div class="row g-4 mb-5">
-        <div class="col-md-6">
-            <a href="{{ route('admin.categories.index') }}" class="text-decoration-none">
-                <div class="stat-card-retro text-center p-4" style="cursor: pointer; transition: all 0.2s;">
-                    <i class="bi bi-tags" style="font-size: 2.5rem; color: #166534;"></i>
-                    <h4 class="mt-2">Categorías</h4>
-                    <p class="text-muted small">Gestiona las categorías de productos</p>
+<!-- ========================================== -->
+<!-- FILA 3: ACCESO RÁPIDO A CATEGORÍAS Y PERSONALIZACIONES -->
+<!-- ========================================== -->
+<div class="row g-4 mb-5">
+    <!-- Categorías -->
+    <div class="col-md-6">
+        <div class="admin-card-retro">
+            <div class="card-header-retro">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-tags" style="color: var(--gray-400);"></i>
+                    <h5 class="mb-0" style="font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;">
+                        Categorías
+                    </h5>
                 </div>
-            </a>
-        </div>
-        <div class="col-md-6">
-            <a href="{{ route('admin.customizations.index') }}" class="text-decoration-none">
-                <div class="stat-card-retro text-center p-4" style="cursor: pointer; transition: all 0.2s;">
-                    <i class="bi bi-palette" style="font-size: 2.5rem; color: #92400E;"></i>
-                    <h4 class="mt-2">Personalizaciones</h4>
-                    <p class="text-muted small">Administra tamaños, sabores, rellenos...</p>
-                </div>
-            </a>
+                <a href="{{ route('admin.categories') }}" class="filter-btn" style="font-size: 0.65rem; padding: 0.3rem 0.8rem;">
+                    <i class="bi bi-gear"></i> Gestionar
+                </a>
+            </div>
+            <div class="card-body py-3 px-4">
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-info-circle"></i> Administra las categorías de productos
+                </p>
+            </div>
         </div>
     </div>
+
+    <!-- Personalizaciones -->
+    <div class="col-md-6">
+        <div class="admin-card-retro">
+            <div class="card-header-retro">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-palette" style="color: var(--gray-400);"></i>
+                    <h5 class="mb-0" style="font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;">
+                        Personalizaciones
+                    </h5>
+                </div>
+                <a href="{{ route('admin.customizations') }}" class="filter-btn" style="font-size: 0.65rem; padding: 0.3rem 0.8rem;">
+                    <i class="bi bi-gear"></i> Gestionar
+                </a>
+            </div>
+            <div class="card-body py-3 px-4">
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-info-circle"></i> Administra tamaños, sabores, rellenos...
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- ========================================== -->
     <!-- FILA 4: PEDIDOS RECIENTES Y PRODUCTOS INACTIVOS -->

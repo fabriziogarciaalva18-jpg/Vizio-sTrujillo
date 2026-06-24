@@ -6,17 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductConfiguration;
 use Illuminate\Http\Request;
-
-class CustomizationController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+class CustomizationController extends Controller  implements HasMiddleware
 {
-    public function __construct()
+    public static function middleware(): array
     {
-        $this->middleware(function ($request, $next) {
-            if (!auth()->check() || !auth()->user()->is_admin) {
-                abort(403, 'No tienes permisos de administrador');
-            }
-            return $next($request);
-        });
+        return [
+            new Middleware(function ($request, $next) {
+                if (!auth()->check() || !auth()->user()->is_admin) {
+                    abort(403, 'No tienes permisos de administrador');
+                }
+                return $next($request);
+            }),
+        ];
     }
 
     public function index(Request $request)

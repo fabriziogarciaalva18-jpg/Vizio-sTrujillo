@@ -5,18 +5,21 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ProductCategory;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Str;
-
 class CategoryController extends Controller
 {
-    public function __construct()
+    public static function middleware(): array
     {
-        $this->middleware(function ($request, $next) {
-            if (!auth()->check() || !auth()->user()->is_admin) {
-                abort(403, 'No tienes permisos de administrador');
-            }
-            return $next($request);
-        });
+        return [
+            new Middleware(function ($request, $next) {
+                if (!auth()->check() || !auth()->user()->is_admin) {
+                    abort(403, 'No tienes permisos de administrador');
+                }
+                return $next($request);
+            }),
+        ];
     }
 
     public function index()
