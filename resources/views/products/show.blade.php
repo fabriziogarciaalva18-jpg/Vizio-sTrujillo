@@ -37,122 +37,67 @@
                     <!-- ====================================== -->
                     <div class="row g-3">
 
-                        <!-- Tamaño -->
-                        @if($product->has_sizes && isset($configurations['sizes']) && count($configurations['sizes']) > 0)
-                        <div class="col-12">
-                            <label class="form-label fw-bold">📏 TAMAÑO</label>
-                            <div class="d-flex flex-wrap gap-2">
-                                @foreach($configurations['sizes'] as $size)
-                                <label class="custom-option">
-                                    <input type="radio" name="configurations[]" value="{{ $size->id }}"
-                                           data-price="{{ $size->price_modifier }}" class="config-option">
-                                    <span class="option-label">
-                                        {{ $size->name }}
-                                        @if($size->price_modifier > 0)
-                                            <span class="badge-price">+ S/. {{ number_format($size->price_modifier, 2) }}</span>
-                                        @endif
-                                    </span>
-                                </label>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
+                        @foreach($configurations as $type => $items)
+                            @php
+                                $icon = match($type) {
+                                    'size' => 'bi-rulers',
+                                    'layers' => 'bi-layers',
+                                    'flavor' => 'bi-droplet',
+                                    'filling' => 'bi-egg-fried',
+                                    'covering' => 'bi-brush',
+                                    'shape' => 'bi-shapes',
+                                    'color' => 'bi-palette',
+                                    'toppings' => 'bi-stars',
+                                    'decoration' => 'bi-gem',
+                                    default => 'bi-tag'
+                                };
+                                $label = match($type) {
+                                    'size' => 'Tamaño',
+                                    'layers' => 'Número de pisos',
+                                    'flavor' => 'Sabor',
+                                    'filling' => 'Relleno',
+                                    'covering' => 'Cobertura',
+                                    'shape' => 'Forma',
+                                    'color' => 'Color',
+                                    'toppings' => 'Toppings',
+                                    'decoration' => 'Decoración',
+                                    default => ucfirst($type)
+                                };
+                            @endphp
 
-                        <!-- Pisos -->
-                        @if($product->has_layers && isset($configurations['layers']) && count($configurations['layers']) > 0)
-                        <div class="col-12">
-                            <label class="form-label fw-bold">🏗️ NÚMERO DE PISOS</label>
-                            <div class="d-flex flex-wrap gap-2">
-                                @foreach($configurations['layers'] as $layer)
-                                <label class="custom-option">
-                                    <input type="radio" name="configurations[]" value="{{ $layer->id }}"
-                                           data-price="{{ $layer->price_modifier }}" class="config-option">
-                                    <span class="option-label">
-                                        {{ $layer->name }}
-                                        @if($layer->price_modifier > 0)
-                                            <span class="badge-price">+ S/. {{ number_format($layer->price_modifier, 2) }}</span>
-                                        @endif
-                                    </span>
-                                </label>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
+                            @if($type === 'message')
+                                <!-- Campo de texto para mensaje personalizado -->
+                                <div class="col-12">
+                                    <label class="form-label fw-bold"><i class="bi bi-chat-text me-1"></i> MENSAJE PERSONALIZADO</label>
+                                    <textarea name="message" class="form-control form-control-retro" rows="2"
+                                              placeholder="Escribe el mensaje que quieres en tu torta..."></textarea>
+                                </div>
+                            @else
+                                <!-- Opciones del tipo actual -->
+                                <div class="col-12">
+                                    <label class="form-label fw-bold"><i class="bi {{ $icon }} me-1"></i> {{ $label }}</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach($items as $item)
+                                        <label class="custom-option">
+                                            <input type="radio" name="configurations[{{ $type }}]" value="{{ $item->id }}"
+                                                   data-price="{{ $item->price_modifier }}" class="config-option">
+                                            <span class="option-label">
+                                                {{ $item->name }}
+                                                @if($item->price_modifier > 0)
+                                                    <span class="badge-price">+ S/. {{ number_format($item->price_modifier, 2) }}</span>
+                                                @endif
+                                            </span>
+                                        </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
 
-                        <!-- Sabor -->
-                        @if($product->has_flavors && isset($configurations['flavors']) && count($configurations['flavors']) > 0)
-                        <div class="col-12">
-                            <label class="form-label fw-bold">🍰 SABOR</label>
-                            <div class="d-flex flex-wrap gap-2">
-                                @foreach($configurations['flavors'] as $flavor)
-                                <label class="custom-option">
-                                    <input type="radio" name="configurations[]" value="{{ $flavor->id }}"
-                                           data-price="{{ $flavor->price_modifier }}" class="config-option">
-                                    <span class="option-label">
-                                        {{ $flavor->name }}
-                                        @if($flavor->price_modifier > 0)
-                                            <span class="badge-price">+ S/. {{ number_format($flavor->price_modifier, 2) }}</span>
-                                        @endif
-                                    </span>
-                                </label>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- Relleno -->
-                        @if($product->has_fillings && isset($configurations['fillings']) && count($configurations['fillings']) > 0)
-                        <div class="col-12">
-                            <label class="form-label fw-bold">🥄 RELLENO</label>
-                            <div class="d-flex flex-wrap gap-2">
-                                @foreach($configurations['fillings'] as $filling)
-                                <label class="custom-option">
-                                    <input type="radio" name="configurations[]" value="{{ $filling->id }}"
-                                           data-price="{{ $filling->price_modifier }}" class="config-option">
-                                    <span class="option-label">
-                                        {{ $filling->name }}
-                                        @if($filling->price_modifier > 0)
-                                            <span class="badge-price">+ S/. {{ number_format($filling->price_modifier, 2) }}</span>
-                                        @endif
-                                    </span>
-                                </label>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- Cobertura -->
-                        @if($product->has_coverings && isset($configurations['coverings']) && count($configurations['coverings']) > 0)
-                        <div class="col-12">
-                            <label class="form-label fw-bold">🎨 COBERTURA</label>
-                            <div class="d-flex flex-wrap gap-2">
-                                @foreach($configurations['coverings'] as $covering)
-                                <label class="custom-option">
-                                    <input type="radio" name="configurations[]" value="{{ $covering->id }}"
-                                           data-price="{{ $covering->price_modifier }}" class="config-option">
-                                    <span class="option-label">
-                                        {{ $covering->name }}
-                                        @if($covering->price_modifier > 0)
-                                            <span class="badge-price">+ S/. {{ number_format($covering->price_modifier, 2) }}</span>
-                                        @endif
-                                    </span>
-                                </label>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- Mensaje personalizado -->
-                        <div class="col-12">
-                            <label class="form-label fw-bold">💬 MENSAJE ESPECIAL</label>
-                            <textarea name="message" class="form-control form-control-retro" rows="2"
-                                      placeholder="Escribe el mensaje que quieres en tu torta..."></textarea>
-                        </div>
-
-                        <!-- Adicionales -->
+                        <!-- Adicionales (globales) -->
                         @if(isset($addons) && count($addons) > 0)
                         <div class="col-12">
-                            <label class="form-label fw-bold">✨ ADICIONALES</label>
+                            <label class="form-label fw-bold"><i class="bi bi-plus-circle me-1"></i> ADICIONALES</label>
                             <div class="row g-2">
                                 @foreach($addons as $addon)
                                 <div class="col-12 col-md-6">
@@ -173,7 +118,7 @@
 
                         <!-- Cantidad -->
                         <div class="col-12">
-                            <label class="form-label fw-bold">🔢 CANTIDAD</label>
+                            <label class="form-label fw-bold"><i class="bi bi-hash me-1"></i> CANTIDAD</label>
                             <div class="d-flex align-items-center gap-3">
                                 <button type="button" class="btn-retro-secondary btn-sm" id="decrementQty">−</button>
                                 <input type="number" name="quantity" id="quantity" value="1" min="1"
@@ -185,7 +130,7 @@
 
                     <!-- Resumen y precio total -->
                     <hr class="retro-divider mt-4">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <div>
                             <span class="text-muted small">Total</span>
                             <div class="h3 fw-bold text-retro" id="totalPrice">
@@ -203,19 +148,19 @@
 </div>
 
 <!-- ========================================== -->
-<!-- ESTILOS ADICIONALES PARA OPCIONES          -->
+<!-- ESTILOS ADICIONALES                       -->
 <!-- ========================================== -->
 <style>
     .custom-option {
         display: inline-flex;
         align-items: center;
         cursor: pointer;
-        border: 2px solid var(--gray-200);
-        border-radius: 8px;
+        border: 1px solid var(--gray-200);
+        border-radius: 6px;
         padding: 0.3rem 0.8rem;
         transition: all 0.2s;
         background: var(--white);
-        margin: 0.2rem;
+        margin: 0.15rem;
         user-select: none;
     }
     .custom-option:hover {
@@ -227,7 +172,7 @@
         display: none;
     }
     .custom-option .option-label {
-        font-size: 0.85rem;
+        font-size: 0.82rem;
         font-weight: 500;
         color: var(--gray-600);
         display: flex;
@@ -235,8 +180,8 @@
         gap: 0.1rem;
     }
     .custom-option .badge-price {
-        font-size: 0.65rem;
-        color: var(--gray-500);
+        font-size: 0.6rem;
+        color: var(--gray-400);
         font-weight: normal;
     }
     .custom-option input:checked + .option-label {
@@ -245,11 +190,15 @@
     .custom-option:has(input:checked) {
         border-color: var(--black);
         background: var(--gray-50);
-        box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
     }
     .addon-option {
         width: 100%;
         justify-content: space-between;
+    }
+    .text-retro {
+        color: var(--black);
+        font-family: 'DM Serif Display', serif;
     }
 </style>
 @endsection
@@ -308,15 +257,5 @@
     // INICIALIZAR PRECIO
     // =============================================
     calculatePrice();
-
-    // =============================================
-    // VALIDACIÓN ANTES DE ENVIAR (opcional)
-    // =============================================
-    document.getElementById('productForm').addEventListener('submit', function(e) {
-        // Puedes agregar validación aquí si es necesario
-        // Por ejemplo, asegurar que al menos una opción obligatoria esté seleccionada
-        // Por ahora, solo dejamos que el formulario se envíe
-        // Si quieres evitar duplicados, el controlador lo manejará
-    });
 </script>
 @endpush

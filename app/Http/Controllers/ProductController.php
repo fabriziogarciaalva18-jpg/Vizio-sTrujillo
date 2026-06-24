@@ -27,20 +27,30 @@ class ProductController extends Controller
         return view('products.index', compact('categories', 'products', 'addons'));
     }
 
-    public function show(Product $product)
-    {
-        $configurations = [
-            'sizes' => $product->getConfigurationsByType('size'),
-            'layers' => $product->getConfigurationsByType('layers'),
-            'flavors' => $product->getConfigurationsByType('flavor'),
-            'fillings' => $product->getConfigurationsByType('filling'),
-            'coverings' => $product->getConfigurationsByType('covering'),
-        ];
+public function show(Product $product)
+{
+    // Agrupar configuraciones por tipo
+    $configurations = [
+        'size' => $product->configurations()->where('config_type', 'size')->orderBy('sort_order')->get(),
+        'layers' => $product->configurations()->where('config_type', 'layers')->orderBy('sort_order')->get(),
+        'flavor' => $product->configurations()->where('config_type', 'flavor')->orderBy('sort_order')->get(),
+        'filling' => $product->configurations()->where('config_type', 'filling')->orderBy('sort_order')->get(),
+        'covering' => $product->configurations()->where('config_type', 'covering')->orderBy('sort_order')->get(),
+        'shape' => $product->configurations()->where('config_type', 'shape')->orderBy('sort_order')->get(),
+        'color' => $product->configurations()->where('config_type', 'color')->orderBy('sort_order')->get(),
+        'toppings' => $product->configurations()->where('config_type', 'toppings')->orderBy('sort_order')->get(),
+        'decoration' => $product->configurations()->where('config_type', 'decoration')->orderBy('sort_order')->get(),
+    ];
 
-        $addons = Addon::where('is_active', true)->get();
+    // Filtrar tipos vacíos
+    $configurations = array_filter($configurations, function($items) {
+        return $items->isNotEmpty();
+    });
 
-        return view('products.show', compact('product', 'configurations', 'addons'));
-    }
+    $addons = Addon::where('is_active', true)->get();
+
+    return view('products.show', compact('product', 'configurations', 'addons'));
+}
 
     public function filter(Request $request)
     {
