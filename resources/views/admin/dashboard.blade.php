@@ -4,7 +4,9 @@
 
 @section('content')
 <div class="container-fluid px-4">
-    <!-- Header -->
+    <!-- ========================================== -->
+    <!-- HEADER                                      -->
+    <!-- ========================================== -->
     <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
             <h1 style="font-family: 'DM Serif Display', serif; font-size: 1.75rem; letter-spacing: -0.5px; margin: 0;">
@@ -16,12 +18,15 @@
         </div>
         <div class="text-end">
             <div class="date-display" style="background: var(--gray-50); padding: 0.5rem 1rem; border-radius: 30px;">
-                 <i class="bi bi-calendar3"></i> {{ now()->format('d/m/Y H:i') }}
+                <i class="bi bi-calendar3"></i>
+                {{ now()->setTimezone('America/Lima')->format('d/m/Y H:i') }}
             </div>
         </div>
     </div>
 
-    <!-- Stats Cards -->
+    <!-- ========================================== -->
+    <!-- FILA 1: ESTADÍSTICAS PRINCIPALES            -->
+    <!-- ========================================== -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
             <div class="stat-card-retro">
@@ -69,7 +74,9 @@
         </div>
     </div>
 
-    <!-- Second Row -->
+    <!-- ========================================== -->
+    <!-- FILA 2: ESTADÍSTICAS SECUNDARIAS           -->
+    <!-- ========================================== -->
     <div class="row g-4 mb-5">
         <div class="col-md-3">
             <div class="stat-card-retro">
@@ -117,8 +124,35 @@
         </div>
     </div>
 
-    <!-- Recent Orders & Inactive Products -->
+    <!-- ========================================== -->
+    <!-- FILA 3: ACCESO RÁPIDO A CATEGORÍAS Y PERSONALIZACIONES -->
+    <!-- ========================================== -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <a href="{{ route('admin.categories') }}" class="text-decoration-none">
+                <div class="stat-card-retro text-center p-4" style="cursor: pointer; transition: all 0.2s;">
+                    <i class="bi bi-tags" style="font-size: 2.5rem; color: #166534;"></i>
+                    <h4 class="mt-2">Categorías</h4>
+                    <p class="text-muted small">Gestiona las categorías de productos</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6">
+            <a href="{{ route('admin.customizations') }}" class="text-decoration-none">
+                <div class="stat-card-retro text-center p-4" style="cursor: pointer; transition: all 0.2s;">
+                    <i class="bi bi-palette" style="font-size: 2.5rem; color: #92400E;"></i>
+                    <h4 class="mt-2">Personalizaciones</h4>
+                    <p class="text-muted small">Administra tamaños, sabores, rellenos...</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- FILA 4: PEDIDOS RECIENTES Y PRODUCTOS INACTIVOS -->
+    <!-- ========================================== -->
     <div class="row g-4">
+        <!-- Columna izquierda: Pedidos recientes -->
         <div class="col-lg-8">
             <div class="admin-card-retro">
                 <div class="card-header-retro">
@@ -195,6 +229,7 @@
             </div>
         </div>
 
+        <!-- Columna derecha: Productos inactivos -->
         <div class="col-lg-4">
             <div class="admin-card-retro">
                 <div class="card-header-retro">

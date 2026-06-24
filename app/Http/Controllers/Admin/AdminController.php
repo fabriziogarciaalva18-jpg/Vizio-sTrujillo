@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductCategory;
+use App\Models\ProductConfiguration;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -53,4 +55,15 @@ class AdminController extends Controller
 
         return view('admin.payments', compact('pendingPayments'));
     }
+    public function categories()
+{
+    $categories = ProductCategory::orderBy('sort_order')->get();
+    return view('admin.categories', compact('categories'));
+}
+
+public function customizations()
+{
+    $configurations = ProductConfiguration::with('product')->orderBy('product_id')->get();
+    return view('admin.customizations', compact('configurations'));
+}
 }

@@ -8,6 +8,8 @@ use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CustomizationController;
 use App\Http\Middleware\CheckUserActive;
 use Illuminate\Support\Facades\Route;
 
@@ -66,6 +68,13 @@ Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders');
         Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
         Route::put('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
+    // Categorías
+        Route::resource('categories', CategoryController::class)->except(['show']);
+        Route::patch('categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
+
+    // Personalizaciones
+        Route::resource('customizations', CustomizationController::class)->except(['show']);
+        Route::patch('customizations/{customization}/toggle-status', [CustomizationController::class, 'toggleStatus'])->name('customizations.toggle-status');
 
         // Productos
         Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
