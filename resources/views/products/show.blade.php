@@ -5,9 +5,7 @@
 @section('content')
 <div class="container py-5">
     <div class="row g-5">
-        <!-- ========================================== -->
-        <!-- COLUMNA IZQUIERDA: Imagen                   -->
-        <!-- ========================================== -->
+        <!-- Imagen -->
         <div class="col-lg-6">
             <div class="retro-card p-4 text-center">
                 <img src="{{ $product->image_url }}"
@@ -17,26 +15,21 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- COLUMNA DERECHA: Detalles y personalización -->
-        <!-- ========================================== -->
+        <!-- Detalles y personalización -->
         <div class="col-lg-6">
             <div class="retro-card p-4">
-                <!-- Título y descripción -->
                 <h1 class="product-title" style="font-size: 2rem; font-weight: 600;">{{ $product->name }}</h1>
                 <p class="text-muted mt-2" style="font-size: 0.95rem; line-height: 1.6;">{{ $product->description }}</p>
                 <hr class="retro-divider">
 
-                <!-- Formulario de personalización y carrito -->
                 <form action="{{ route('cart.add') }}" method="POST" id="productForm">
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                    <!-- ====================================== -->
-                    <!-- OPCIONES DE PERSONALIZACIÓN           -->
-                    <!-- ====================================== -->
+                    <!-- ========================================= -->
+                    <!-- PERSONALIZACIONES DESDE LA BD            -->
+                    <!-- ========================================= -->
                     <div class="row g-3">
-
                         @foreach($configurations as $type => $items)
                             @php
                                 $icon = match($type) {
@@ -65,36 +58,38 @@
                                 };
                             @endphp
 
-                            @if($type === 'message')
-                                <!-- Campo de texto para mensaje personalizado -->
-                                <div class="col-12">
-                                    <label class="form-label fw-bold"><i class="bi bi-chat-text me-1"></i> MENSAJE PERSONALIZADO</label>
-                                    <textarea name="message" class="form-control form-control-retro" rows="2"
-                                              placeholder="Escribe el mensaje que quieres en tu torta..."></textarea>
+                            <div class="col-12">
+                                <label class="form-label fw-bold"><i class="bi {{ $icon }} me-1"></i> {{ $label }}</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach($items as $item)
+                                    <label class="custom-option">
+                                        <input type="radio" name="configurations[{{ $type }}]" value="{{ $item->id }}"
+                                               data-price="{{ $item->price_modifier }}" class="config-option">
+                                        <span class="option-label">
+                                            {{ $item->name }}
+                                            @if($item->price_modifier > 0)
+                                                <span class="badge-price">+ S/. {{ number_format($item->price_modifier, 2) }}</span>
+                                            @endif
+                                        </span>
+                                    </label>
+                                    @endforeach
                                 </div>
-                            @else
-                                <!-- Opciones del tipo actual -->
-                                <div class="col-12">
-                                    <label class="form-label fw-bold"><i class="bi {{ $icon }} me-1"></i> {{ $label }}</label>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        @foreach($items as $item)
-                                        <label class="custom-option">
-                                            <input type="radio" name="configurations[{{ $type }}]" value="{{ $item->id }}"
-                                                   data-price="{{ $item->price_modifier }}" class="config-option">
-                                            <span class="option-label">
-                                                {{ $item->name }}
-                                                @if($item->price_modifier > 0)
-                                                    <span class="badge-price">+ S/. {{ number_format($item->price_modifier, 2) }}</span>
-                                                @endif
-                                            </span>
-                                        </label>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
+                            </div>
                         @endforeach
 
-                        <!-- Adicionales (globales) -->
+                        <!-- ========================================= -->
+                        <!-- MENSAJE PERSONALIZADO (SIEMPRE VISIBLE)  -->
+                        <!-- ========================================= -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold"><i class="bi bi-chat-text me-1"></i> MENSAJE PERSONALIZADO</label>
+                            <textarea name="message" class="form-control form-control-retro" rows="2"
+                                      placeholder="Escribe el mensaje que quieres en tu torta..."></textarea>
+                            <small class="text-muted">Ej: "Feliz Cumpleaños", "Te quiero", etc.</small>
+                        </div>
+
+                        <!-- ========================================= -->
+                        <!-- ADICIONALES (GLOBALES)                  -->
+                        <!-- ========================================= -->
                         @if(isset($addons) && count($addons) > 0)
                         <div class="col-12">
                             <label class="form-label fw-bold"><i class="bi bi-plus-circle me-1"></i> ADICIONALES</label>
@@ -116,7 +111,9 @@
                         </div>
                         @endif
 
-                        <!-- Cantidad -->
+                        <!-- ========================================= -->
+                        <!-- CANTIDAD                                 -->
+                        <!-- ========================================= -->
                         <div class="col-12">
                             <label class="form-label fw-bold"><i class="bi bi-hash me-1"></i> CANTIDAD</label>
                             <div class="d-flex align-items-center gap-3">
@@ -128,7 +125,9 @@
                         </div>
                     </div>
 
-                    <!-- Resumen y precio total -->
+                    <!-- ========================================= -->
+                    <!-- TOTAL Y BOTÓN                            -->
+                    <!-- ========================================= -->
                     <hr class="retro-divider mt-4">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <div>
@@ -147,9 +146,9 @@
     </div>
 </div>
 
-<!-- ========================================== -->
-<!-- ESTILOS ADICIONALES                       -->
-<!-- ========================================== -->
+<!-- ========================================= -->
+<!-- ESTILOS PARA OPCIONES                      -->
+<!-- ========================================= -->
 <style>
     .custom-option {
         display: inline-flex;

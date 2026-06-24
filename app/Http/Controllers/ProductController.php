@@ -29,7 +29,7 @@ class ProductController extends Controller
 
 public function show(Product $product)
 {
-    // Agrupar configuraciones por tipo
+    // Agrupar configuraciones por tipo (de la BD)
     $configurations = [
         'size' => $product->configurations()->where('config_type', 'size')->orderBy('sort_order')->get(),
         'layers' => $product->configurations()->where('config_type', 'layers')->orderBy('sort_order')->get(),
@@ -42,7 +42,7 @@ public function show(Product $product)
         'decoration' => $product->configurations()->where('config_type', 'decoration')->orderBy('sort_order')->get(),
     ];
 
-    // Filtrar tipos vacíos
+    // Filtrar solo los tipos que tienen al menos una opción
     $configurations = array_filter($configurations, function($items) {
         return $items->isNotEmpty();
     });
