@@ -9,7 +9,8 @@ use App\Models\ProductConfiguration;
 use App\Models\Addon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 class OrderController extends Controller
 {
     /**
@@ -155,24 +156,92 @@ class OrderController extends Controller
     /**
      * Procesar pago y redirigir
      */
-    public function processPayment(Request $request)
+   public function processPayment(Request $request)
     {
-        $request->validate([
-            'delivery_address' => 'required|string',
-            'district'         => 'required|string',
-            'phone'            => 'required|string',
-            'delivery_date'    => 'required|date|after:today',
-            'payment_method'   => 'required|in:yape,plin,transferencia,contraentrega',
+        $rules = [
+            'delivery_type' => 'required|in:pickup,delivery',
+            'phone' => 'required|regex:/^[0-9]{9}$/|starts_with:9',
+            'delivery_date' => 'required|date|after:today',
+            'payment_method' => 'required|in:yape,plin,transferencia,contraentrega',
             'special_instructions' => 'nullable|string',
-        ]);
+        ];
+
+        // Validaciones condicionales para entrega a domicilio
+        if ($request->delivery_type === 'delivery') {
+            $rules['delivery_address'] = 'required|string|min:10';
+            $rules['district'] = 'required|string';
+            $rules['latitude'] = 'required|numeric|between:-90,90';
+            $rules['longitude'] = 'required|numeric|between:-180,180';
+        }
+
+        $validated = $request->validate($rules);
+
+        // Validar que la dirección esté dentro de La Libertad
+        if ($request->delivery_type === 'delivery') {
+            $isValid = $this->validateAddressLocation($request->latitude, $request->longitude);
+            if (!$isValid) {
+                return back()->withErrors([
+                    'delivery_address' => 'La dirección ingresada no está dentro de la región La Libertad. Verifica o elige recoger en tienda.'
+                ])->withInput();
+            }
+
+            // Calcular costo de envío
+            $shippingCost = $this->calculateShippingCost($request->latitude, $request->longitude);
+            session()->put('shipping_cost', $shippingCost);
+        } else {
+            session()->put('shipping_cost', 0);
+        }
 
         $cart = session()->get('cart', []);
         if (empty($cart)) {
             return redirect()->route('cart')->with('error', 'El carrito está vacío');
         }
 
+        // Guardar datos del checkout en sesión
         session()->put('checkout_data', $request->all());
+
+        // Redirigir a la página de pago
         return redirect()->route('payment.method', ['method' => $request->payment_method]);
+    }
+    private function validateAddressLocation($lat, $lng)
+    {
+        $bounds = config('shipping.bounds');
+        return ($lat >= $bounds['lat_min'] && $lat <= $bounds['lat_max'] &&
+                $lng >= $bounds['lng_min'] && $lng <= $bounds['lng_max']);
+    }
+    private function haversineDistance($lat1, $lon1, $lat2, $lon2)
+    {
+        $earthRadius = 6371;
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLon / 2) * sin($dLon / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
+    }
+
+    /**
+     * Calcular costo de envío basado en distancia (Haversine)
+     */
+    private function calculateShippingCost($lat, $lng)
+    {
+        $storeLat = config('shipping.store.lat');
+        $storeLng = config('shipping.store.lng');
+
+        $distance = $this->haversineDistance($storeLat, $storeLng, $lat, $lng);
+
+        $rates = config('shipping.rates');
+        foreach ($rates as $rate) {
+            if ($distance <= $rate['max_distance']) {
+                return $rate['price'];
+            }
+        }
+        return 25.00; // Fallback
     }
 
     /**
