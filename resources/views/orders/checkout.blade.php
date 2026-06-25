@@ -13,17 +13,19 @@
         $cart = session()->get('cart', []);
         $subtotal = 0;
         foreach ($cart as $item) {
-            $subtotal += $item['price'] * $item['quantity'];
+            $subtotal += ($item['unit_price'] ?? $item['price'] ?? 0) * $item['quantity'];
         }
-        $delivery_fee = 8;
+        $delivery_fee = 800; // S/. 8.00 (en céntimos)
         $total = $subtotal + $delivery_fee;
     @endphp
 
     @if(empty($cart))
     <div class="text-center py-5">
-        <i class="bi bi-cart-x" style="font-size: 4rem;"></i>
-        <p>Tu carrito está vacío</p>
-        <a href="{{ route('catalog') }}" class="btn-retro-primary">VER CATÁLOGO</a>
+        <i class="bi bi-cart-x" style="font-size: 4rem; color: #9E9890;"></i>
+        <p class="mt-3 text-muted">Tu carrito está vacío</p>
+        <a href="{{ route('catalog') }}" class="btn-retro-primary mt-2">
+            <i class="bi bi-grid-3x3-gap-fill"></i> VER CATÁLOGO
+        </a>
     </div>
     @else
     <div class="row">
@@ -52,10 +54,10 @@
                         <div class="col-md-6">
                             <label class="form-label">MÉTODO DE PAGO *</label>
                             <select name="payment_method" class="form-select form-control-retro" required>
-                                <option value="yape">YAPE</option>
-                                <option value="plin">PLIN</option>
-                                <option value="transferencia">TRANSFERENCIA BANCARIA</option>
-                                <option value="contraentrega">CONTRA ENTREGA</option>
+                                <option value="yape">📱 YAPE</option>
+                                <option value="plin">📱 PLIN</option>
+                                <option value="transferencia">🏦 TRANSFERENCIA BANCARIA</option>
+                                <option value="contraentrega">💵 CONTRA ENTREGA</option>
                             </select>
                         </div>
                         <div class="col-12">
@@ -77,22 +79,22 @@
                 @foreach($cart as $item)
                 <div class="d-flex justify-content-between mb-2">
                     <span>{{ $item['name'] }} x{{ $item['quantity'] }}</span>
-                    <span>S/. {{ number_format(($item['price'] * $item['quantity']) , 2) }}</span>
+                    <span>S/. {{ number_format(($item['unit_price'] ?? $item['price'] ?? 0) * $item['quantity'], 2) }}</span>
                 </div>
                 @endforeach
                 <hr>
                 <div class="d-flex justify-content-between">
                     <span>Subtotal</span>
-                    <span>S/. {{ number_format($subtotal , 2) }}</span>
+                    <span>S/. {{ number_format($subtotal / 100, 2) }}</span>
                 </div>
                 <div class="d-flex justify-content-between">
                     <span>Envío</span>
-                    <span>S/. {{ number_format($delivery_fee , 2) }}</span>
+                    <span>S/. {{ number_format($delivery_fee / 100, 2) }}</span>
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between fw-bold">
                     <span>TOTAL</span>
-                    <span class="text-success">S/. {{ number_format($total , 2) }}</span>
+                    <span class="text-success">S/. {{ number_format($total / 100, 2) }}</span>
                 </div>
             </div>
         </div>
@@ -100,3 +102,15 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.getElementById('checkoutForm')?.addEventListener('submit', function(e) {
+        const deliveryDate = document.querySelector('input[name="delivery_date"]');
+        if (deliveryDate && new Date(deliveryDate.value) <= new Date()) {
+            e.preventDefault();
+            alert('La fecha de entrega debe ser posterior a hoy');
+        }
+    });
+</script>
+@endpush
