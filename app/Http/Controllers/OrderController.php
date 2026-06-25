@@ -274,4 +274,83 @@ class OrderController extends Controller
         $order->update(['status' => 'cancelled']);
         return back()->with('success', 'Pedido cancelado.');
     }
+    /**
+ * Actualizar un item del carrito desde el modal de edición
+ */
+public function updateCartItem(Request $request, $key)
+{
+    $cart = session()->get('cart', []);
+    if (!isset($cart[$key])) {
+        return response()->json(['success' => false, 'message' => 'Item no encontrado'], 404);
+    }
+
+    $oldItem = $cart[$key];
+
+    // Recoger datos del formulario
+    $selectedConfigs = $request->input('configurations', []);
+    $selectedAddons = $request->input('addons', []);
+    $message = $request->input('message', '');
+    $quantity = $request->input('quantity', 1);
+
+    // Calcular nuevo precio unitario
+    $product = Product::find($oldItem['id']);
+    if (!$product) {
+        return response()->json(['success' => false, 'message' => 'Producto no encontrado'], 404);
+    }
+
+    $unitPrice = $product->base_price;
+
+    foreach ($selectedConfigs as $type => $configId) {
+        $config = ProductConfiguration::find($configId);
+        if ($config) {
+            $unitPrice += $config->price_modifier;
+        }
+    }
+
+    foreach ($selectedAddons as $addonId) {
+        $addon = Addon::find($addonId);
+        if ($addon) {
+            $unitPrice += $addon->price;
+        }
+    }
+
+    $messagePrice = $request->input('message_price', 0);
+    if (!empty($message) && $messagePrice > 0) {
+        $unitPrice += $messagePrice;
+    }
+
+    // Generar nueva clave
+    $newKey = $product->id . '_' . md5(json_encode($selectedConfigs) . json_encode($selectedAddons) . $message);
+
+    // Si la clave cambia, eliminar el viejo y añadir el nuevo
+    if ($newKey !== $key) {
+        unset($cart[$key]);
+        if (isset($cart[$newKey])) {
+            $cart[$newKey]['quantity'] += $quantity;
+        } else {
+            $cart[$newKey] = [
+                'id'               => $product->id,
+                'name'             => $product->name,
+                'base_price'       => $product->base_price,
+                'unit_price'       => $unitPrice,
+                'quantity'         => $quantity,
+                'selected_configs' => $selectedConfigs,
+                'selected_addons'  => $selectedAddons,
+                'message'          => $message,
+                'image'            => $product->image_url,
+            ];
+        }
+    } else {
+        // Misma clave, actualizar cantidad y precios
+        $cart[$key]['quantity'] = $quantity;
+        $cart[$key]['unit_price'] = $unitPrice;
+        $cart[$key]['selected_configs'] = $selectedConfigs;
+        $cart[$key]['selected_addons'] = $selectedAddons;
+        $cart[$key]['message'] = $message;
+    }
+
+    session()->put('cart', $cart);
+
+    return response()->json(['success' => true, 'message' => 'Carrito actualizado']);
+}
 }
