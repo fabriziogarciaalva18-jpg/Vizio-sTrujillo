@@ -13,16 +13,35 @@ use Illuminate\Support\Facades\DB;
 class OrderController extends Controller
 {
     /**
-     * Mostrar el carrito de compras
+     * Mostrar el carrito de compras (normaliza items)
      */
     public function cart()
     {
         $cart = session()->get('cart', []);
         $total = 0;
 
-        foreach ($cart as $item) {
+        // Normalizar items (asegurar unit_price)
+        $normalizedCart = [];
+        foreach ($cart as $key => $item) {
+            // Si no tiene unit_price, intentar calcularlo
+            if (!isset($item['unit_price'])) {
+                // Usar price o base_price como fallback
+                $item['unit_price'] = $item['price'] ?? $item['base_price'] ?? 0;
+                // Actualizar en la sesión
+                $cart[$key]['unit_price'] = $item['unit_price'];
+            }
+            // Asegurar que quantity existe
+            if (!isset($item['quantity'])) {
+                $item['quantity'] = 1;
+                $cart[$key]['quantity'] = 1;
+            }
+            // Guardar item normalizado
+            $normalizedCart[$key] = $item;
             $total += $item['unit_price'] * $item['quantity'];
         }
+
+        // Actualizar sesión con datos normalizados
+        session()->put('cart', $cart);
 
         return view('orders.cart', compact('cart', 'total'));
     }
@@ -138,7 +157,8 @@ class OrderController extends Controller
 
         $subtotal = 0;
         foreach ($cart as $item) {
-            $subtotal += $item['unit_price'] * $item['quantity'];
+            $price = $item['unit_price'] ?? $item['price'] ?? 0;
+            $subtotal += $price * $item['quantity'];
         }
 
         $delivery_fee = config('payments.delivery_fee', 800);
@@ -177,7 +197,8 @@ class OrderController extends Controller
     {
         $subtotal = 0;
         foreach ($cart as $item) {
-            $subtotal += $item['unit_price'] * $item['quantity'];
+            $price = $item['unit_price'] ?? $item['price'] ?? 0;
+            $subtotal += $price * $item['quantity'];
         }
 
         $deliveryFee = config('payments.delivery_fee', 800);
@@ -216,8 +237,8 @@ class OrderController extends Controller
                     'product_id'    => $item['id'],
                     'product_name'  => $item['name'],
                     'quantity'      => $item['quantity'],
-                    'unit_price'    => $item['unit_price'],
-                    'subtotal'      => $item['unit_price'] * $item['quantity'],
+                    'unit_price'    => $item['unit_price'] ?? $item['price'] ?? 0,
+                    'subtotal'      => ($item['unit_price'] ?? $item['price'] ?? 0) * $item['quantity'],
                     'configuration' => json_encode($customization),
                 ]);
             }

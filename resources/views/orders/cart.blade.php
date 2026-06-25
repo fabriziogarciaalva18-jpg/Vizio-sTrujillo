@@ -25,7 +25,8 @@
         $cart = session()->get('cart', []);
         $total = 0;
         foreach ($cart as $item) {
-            $total += $item['unit_price'] * $item['quantity'];
+            $price = $item['unit_price'] ?? $item['price'] ?? 0;
+            $total += $price * $item['quantity'];
         }
     @endphp
 
@@ -68,7 +69,7 @@
                             </div>
                         @endif
                         <div class="small text-muted">
-                            <i class="bi bi-currency-dollar"></i> Precio unitario: S/. {{ number_format($item['unit_price'], 2) }}
+                            <i class="bi bi-currency-dollar"></i> Precio unitario: S/. {{ number_format($item['unit_price'] ?? $item['price'] ?? 0, 2) }}
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -81,7 +82,7 @@
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <span class="item-total">S/. {{ number_format($item['unit_price'] * $item['quantity'], 2) }}</span>
+                        <span class="item-total">S/. {{ number_format(($item['unit_price'] ?? $item['price'] ?? 0) * $item['quantity'], 2) }}</span>
                     </div>
                     <div class="col-md-1 text-end">
                         <button class="btn-retro-danger btn-sm remove-item" data-key="{{ $key }}">
