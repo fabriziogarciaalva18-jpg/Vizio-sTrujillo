@@ -12,7 +12,11 @@ return [
     | location for this type of information, allowing packages to have
     | a conventional file to locate the various service credentials.
     |
+
     */
+    'google' => [
+    'maps_key' => env('GOOGLE_MAPS_API_KEY'),
+],
 'recaptcha' => [
         'site' => env('RECAPTCHA_SITE_KEY'),
         'secret' => env('RECAPTCHA_SECRET_KEY'),
