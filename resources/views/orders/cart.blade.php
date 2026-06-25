@@ -146,13 +146,31 @@
     });
 
     document.querySelectorAll('.remove-item').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const key = this.dataset.key;
-            if (confirm('¿Eliminar este producto del carrito?')) {
-                window.location.href = `/cart/remove/${key}`;
-            }
-        });
+    btn.addEventListener('click', function() {
+        const key = this.dataset.key;
+        if (confirm('¿Eliminar este producto del carrito?')) {
+            fetch(`/cart/remove/${key}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || 'Error al eliminar el producto');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al eliminar el producto');
+            });
+        }
     });
+});
 
     document.querySelectorAll('.decrement').forEach(btn => {
         btn.addEventListener('click', function() {

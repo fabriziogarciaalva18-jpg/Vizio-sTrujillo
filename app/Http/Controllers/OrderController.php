@@ -121,15 +121,16 @@ class OrderController extends Controller
     /**
      * Eliminar producto del carrito
      */
-    public function removeFromCart($id)
-    {
-        $cart = session()->get('cart', []);
-        if (isset($cart[$id])) {
-            unset($cart[$id]);
-            session()->put('cart', $cart);
-        }
-        return redirect()->route('cart')->with('success', 'Producto eliminado');
+public function removeFromCart($id)
+{
+    $cart = session()->get('cart', []);
+    if (isset($cart[$id])) {
+        unset($cart[$id]);
+        session()->put('cart', $cart);
+        return response()->json(['success' => true]);
     }
+    return response()->json(['success' => false, 'message' => 'Producto no encontrado'], 404);
+}
 
     /**
      * Actualizar cantidad

@@ -36,7 +36,7 @@ Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function 
     // ---- CARRITO ----
     Route::get('/cart', [OrderController::class, 'cart'])->name('cart');
     Route::post('/cart/add', [OrderController::class, 'addToCart'])->name('cart.add');
-    Route::post('/cart/remove/{id}', [OrderController::class, 'removeFromCart'])->name('cart.remove');
+    Route::get('/cart/remove/{id}', [OrderController::class, 'removeFromCart'])->name('cart.remove');
     Route::post('/cart/update/{id}', [OrderController::class, 'updateCart'])->name('cart.update');
 
     // ---- CHECKOUT ----
