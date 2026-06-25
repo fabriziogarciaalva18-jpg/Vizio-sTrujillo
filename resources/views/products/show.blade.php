@@ -278,18 +278,27 @@
                     r.disabled = true;
                 });
             }
-            // Recalcular precio al activar/desactivar el grupo
             calculatePrice();
         });
     });
 
     // =============================================
-    // EVENTOS PARA ACTUALIZAR PRECIO
+    // EVENTOS PARA ACTUALIZAR PRECIO AL SELECCIONAR OPCIONES
     // =============================================
-    // Usamos 'click' y 'change' para asegurar que siempre se dispare
+    // ✅ SOLUCIÓN: Escuchar clics en los labels (custom-option)
+    // que contienen radios o checkboxes
+    document.querySelectorAll('.custom-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+            // Forzar recálculo después de que el navegador actualice el estado del input
+            setTimeout(() => {
+                calculatePrice();
+            }, 50);
+        });
+    });
+
+    // También mantener los eventos originales para inputs directos
     document.querySelectorAll('.config-option, .addon-checkbox, #quantity, textarea[name="message"]').forEach(el => {
         el.addEventListener('change', calculatePrice);
-        el.addEventListener('click', calculatePrice);  // <-- AÑADIDO 'click'
         el.addEventListener('input', calculatePrice);
     });
 
@@ -301,16 +310,14 @@
         let val = parseInt(input.value) || 1;
         if (val > 1) {
             input.value = val - 1;
-            input.dispatchEvent(new Event('change'));
-            calculatePrice();
+            setTimeout(calculatePrice, 50);
         }
     });
     document.getElementById('incrementQty').addEventListener('click', function() {
         const input = document.getElementById('quantity');
         let val = parseInt(input.value) || 1;
         input.value = val + 1;
-        input.dispatchEvent(new Event('change'));
-        calculatePrice();
+        setTimeout(calculatePrice, 50);
     });
 
     // =============================================
