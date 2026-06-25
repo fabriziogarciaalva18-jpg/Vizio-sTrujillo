@@ -91,6 +91,7 @@ Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function 
 
         // ---------- CATEGORÍAS ----------
         // Resource manual para evitar duplicación
+       Route::post('/cart/update-item/{key}', [App\Http\Controllers\Admin\OrderController::class, 'updateCartItem'])->name('cart.update-item');
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
         Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
         Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');

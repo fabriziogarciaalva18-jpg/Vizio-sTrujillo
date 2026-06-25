@@ -58,6 +58,38 @@ class ProductController extends Controller
         $products = $query->get();
         return response()->json($products);
     }
+    public function getCustomizationsData(Product $product)
+{
+    $configs = $product->configurations()->where('is_active', true)->get();
+    $messageConfig = null;
+    $otherConfigs = [];
+
+    foreach ($configs as $config) {
+        if ($config->config_type === 'message') {
+            $messageConfig = $config;
+        } else {
+            $otherConfigs[$config->config_type][] = $config;
+        }
+    }
+
+    $configurations = [];
+    foreach ($otherConfigs as $type => $items) {
+        $configurations[$type] = collect($items);
+    }
+
+    $addons = Addon::where('is_active', true)->get();
+
+    return response()->json([
+        'product' => [
+            'id' => $product->id,
+            'name' => $product->name,
+            'base_price' => $product->base_price,
+        ],
+        'configurations' => $configurations,
+        'addons' => $addons,
+        'message_config' => $messageConfig,
+    ]);
+}
 
     public function calculatePrice(Request $request, Product $product)
     {
