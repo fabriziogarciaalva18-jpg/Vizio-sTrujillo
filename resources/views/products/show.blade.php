@@ -219,28 +219,23 @@
     }
 </style>
 @endsection
-
 @push('scripts')
 <script>
     // =============================================
-    // FUNCIÓN PRINCIPAL DE CÁLCULO
+    // FUNCIÓN PRINCIPAL DE CÁLCULO (SIMPLIFICADA)
     // =============================================
     function calculatePrice() {
         let basePrice = parseFloat({{ $product->base_price }});
 
-        // Sumar configuraciones seleccionadas (solo de grupos activos)
-        document.querySelectorAll('.group-toggle:checked').forEach(toggle => {
-            const group = toggle.dataset.group;
-            const checkedRadio = document.querySelector(`input[name="configurations[${group}"]:checked`);
-            if (checkedRadio) {
-                const price = parseFloat(checkedRadio.dataset.price) || 0;
-                basePrice += price;
-            }
+        // Sumar todas las opciones de personalización seleccionadas
+        document.querySelectorAll('.config-option:checked').forEach(el => {
+            const price = parseFloat(el.dataset.price) || 0;
+            basePrice += price;
         });
 
         // Sumar adicionales seleccionados
-        document.querySelectorAll('.addon-checkbox:checked').forEach(checkbox => {
-            const price = parseFloat(checkbox.dataset.price) || 0;
+        document.querySelectorAll('.addon-checkbox:checked').forEach(el => {
+            const price = parseFloat(el.dataset.price) || 0;
             basePrice += price;
         });
 
@@ -278,15 +273,15 @@
                     r.disabled = true;
                 });
             }
+            // Recalcular precio al activar/desactivar el grupo
             calculatePrice();
         });
     });
 
     // =============================================
-    // EVENTOS PARA ACTUALIZAR PRECIO AL SELECCIONAR OPCIONES
+    // EVENTOS PARA ACTUALIZAR PRECIO
     // =============================================
-    // ✅ SOLUCIÓN: Escuchar clics en los labels (custom-option)
-    // que contienen radios o checkboxes
+    // Escuchar clics en los contenedores de opciones (para capturar radios/checks ocultos)
     document.querySelectorAll('.custom-option').forEach(option => {
         option.addEventListener('click', function(e) {
             // Forzar recálculo después de que el navegador actualice el estado del input
@@ -296,7 +291,7 @@
         });
     });
 
-    // También mantener los eventos originales para inputs directos
+    // Escuchar cambios directos en inputs
     document.querySelectorAll('.config-option, .addon-checkbox, #quantity, textarea[name="message"]').forEach(el => {
         el.addEventListener('change', calculatePrice);
         el.addEventListener('input', calculatePrice);
