@@ -24,6 +24,9 @@
     @php
         $cart = session()->get('cart', []);
         $total = 0;
+        foreach ($cart as $item) {
+            $total += $item['unit_price'] * $item['quantity'];
+        }
     @endphp
 
     @if(empty($cart))
@@ -37,31 +40,53 @@
     @else
     <div class="row">
         <div class="col-lg-8">
-            @foreach($cart as $id => $item)
-            @php $itemTotal = $item['price'] * $item['quantity']; $total += $itemTotal; @endphp
+            @foreach($cart as $key => $item)
             <div class="order-card mb-3">
                 <div class="row align-items-center">
-                    <div class="col-md-6">
+                    <div class="col-md-5">
                         <h4 class="mb-0">{{ $item['name'] }}</h4>
-                        <small class="text-muted">S/. {{ number_format($item['price'], 2) }} c/u</small>
+                        @if(!empty($item['message']))
+                            <span class="badge bg-light text-dark"><i class="bi bi-chat-text"></i> "{{ $item['message'] }}"</span>
+                        @endif
+                        @if(!empty($item['selected_configs']))
+                            <div class="small text-muted mt-1">
+                                @php
+                                    $configNames = [];
+                                    foreach($item['selected_configs'] as $type => $configId) {
+                                        $config = App\Models\ProductConfiguration::find($configId);
+                                        if($config) {
+                                            $configNames[] = ucfirst($type) . ': ' . $config->name;
+                                        }
+                                    }
+                                @endphp
+                                {{ implode(' | ', $configNames) }}
+                            </div>
+                        @endif
+                        @if(!empty($item['selected_addons']))
+                            <div class="small text-muted">
+                                <i class="bi bi-plus-circle"></i> {{ count($item['selected_addons']) }} adicional(es)
+                            </div>
+                        @endif
+                        <div class="small text-muted">
+                            <i class="bi bi-currency-dollar"></i> Precio unitario: S/. {{ number_format($item['unit_price'], 2) }}
+                        </div>
                     </div>
                     <div class="col-md-3">
-                        <form action="{{ route('cart.update', $id) }}" method="POST" class="d-flex align-items-center">
-                            @csrf
-                            <input type="number" name="quantity" value="{{ $item['quantity'] }}" min="1" max="99" style="width: 60px; margin-right: 5px;" class="form-control form-control-sm">
-                            <button type="submit" class="btn-retro-secondary btn-sm">ACT</button>
-                        </form>
+                        <div class="d-flex align-items-center">
+                            <button class="btn-retro-secondary btn-sm decrement" data-key="{{ $key }}">-</button>
+                            <input type="number" class="form-control form-control-sm text-center cart-qty"
+                                   data-key="{{ $key }}" value="{{ $item['quantity'] }}" min="1"
+                                   style="width: 60px; margin: 0 5px;">
+                            <button class="btn-retro-secondary btn-sm increment" data-key="{{ $key }}">+</button>
+                        </div>
                     </div>
                     <div class="col-md-2">
-                        <strong>S/. {{ number_format($itemTotal, 2) }}</strong>
+                        <span class="item-total">S/. {{ number_format($item['unit_price'] * $item['quantity'], 2) }}</span>
                     </div>
-                    <div class="col-md-1">
-                        <form action="{{ route('cart.remove', $id) }}" method="POST">
-                            @csrf
-                            <button type="submit" class="btn-retro-danger btn-sm">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
+                    <div class="col-md-1 text-end">
+                        <button class="btn-retro-danger btn-sm remove-item" data-key="{{ $key }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -72,7 +97,7 @@
                 <h3 class="profile-section-title">RESUMEN</h3>
                 <div class="summary-row">
                     <span>Subtotal</span>
-                    <span>S/. {{ number_format($total , 2) }}</span>
+                    <span>S/. {{ number_format($total, 2) }}</span>
                 </div>
                 <div class="summary-row">
                     <span>Envío</span>
@@ -81,7 +106,7 @@
                 <hr>
                 <div class="summary-row total">
                     <span><strong>TOTAL</strong></span>
-                    <span><strong>S/. {{ number_format(($total + 8.00) , 2) }}</strong></span>
+                    <span><strong>S/. {{ number_format($total + 8.00, 2) }}</strong></span>
                 </div>
                 <a href="{{ route('checkout') }}" class="btn-retro-primary w-100 mt-3">
                     <i class="bi bi-credit-card"></i> PROCEDER AL PAGO
