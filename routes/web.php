@@ -33,11 +33,14 @@ Route::get('/catalog', [ProductController::class, 'index'])->name('catalog');
 Route::get('/product/{product}', [ProductController::class, 'show'])->name('products.show');
 
 // =============================================
-// RUTAS AUTENTICADAS (requieren login, verificación de email y usuario activo)
+// RUTAS AUTENTICADAS
+// (requieren login, verificación de email y usuario activo)
 // =============================================
 Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function () {
 
-    // Perfil
+    // =========================================
+    // PERFIL
+    // =========================================
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -54,9 +57,14 @@ Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function 
     // =========================================
     Route::get('/cart', [OrderController::class, 'cart'])->name('cart');
     Route::post('/cart/add', [OrderController::class, 'addToCart'])->name('cart.add');
-    // 🔥 CORREGIDO: DELETE en lugar de GET
     Route::delete('/cart/remove/{id}', [OrderController::class, 'removeFromCart'])->name('cart.remove');
     Route::post('/cart/update/{id}', [OrderController::class, 'updateCart'])->name('cart.update');
+
+    // 🔥 RUTA PARA ACTUALIZAR ITEM DEL CARRITO DESDE MODAL DE EDICIÓN
+    Route::post('/cart/update-item/{key}', [OrderController::class, 'updateCartItem'])->name('cart.update-item');
+
+    // 🔥 RUTA API PARA OBTENER PERSONALIZACIONES DE UN PRODUCTO (para el modal de edición)
+    Route::get('/api/product/{product}/customizations', [ProductController::class, 'getCustomizationsData'])->name('api.product.customizations');
 
     // =========================================
     // CHECKOUT
@@ -90,8 +98,6 @@ Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function 
         Route::put('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
 
         // ---------- CATEGORÍAS ----------
-        // Resource manual para evitar duplicación
-       Route::post('/cart/update-item/{key}', [App\Http\Controllers\Admin\OrderController::class, 'updateCartItem'])->name('cart.update-item');
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
         Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
         Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');

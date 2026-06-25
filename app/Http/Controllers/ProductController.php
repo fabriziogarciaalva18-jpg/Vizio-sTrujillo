@@ -58,7 +58,9 @@ class ProductController extends Controller
         $products = $query->get();
         return response()->json($products);
     }
-    public function getCustomizationsData(Product $product)
+use App\Models\Addon;
+
+public function getCustomizationsData(Product $product)
 {
     $configs = $product->configurations()->where('is_active', true)->get();
     $messageConfig = null;
