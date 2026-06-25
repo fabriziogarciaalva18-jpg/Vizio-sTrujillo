@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductCategory;
-use App\Models\Addon;
+use App\Models\Addon;                 // ✅ Importación correcta
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -13,19 +13,21 @@ class ProductController extends Controller
     {
         $categories = ProductCategory::where('is_active', true)->orderBy('sort_order')->get();
         $query = Product::where('is_active', true)->with('category');
+
         if ($request->has('category') && $request->category != 'all') {
             $query->whereHas('category', function($q) use ($request) {
                 $q->where('slug', $request->category);
             });
         }
+
         $products = $query->get();
-        $addons = Addon::where('is_active', true)->get();
+        $addons = Addon::where('is_active', true)->get(); // ✅ Usa Addon
+
         return view('products.index', compact('categories', 'products', 'addons'));
     }
 
     public function show(Product $product)
     {
-        // Obtener configuraciones activas
         $configs = $product->configurations()->where('is_active', true)->get();
         $messageConfig = null;
         $otherConfigs = [];
@@ -58,40 +60,6 @@ class ProductController extends Controller
         $products = $query->get();
         return response()->json($products);
     }
-use App\Models\Addon;
-
-public function getCustomizationsData(Product $product)
-{
-    $configs = $product->configurations()->where('is_active', true)->get();
-    $messageConfig = null;
-    $otherConfigs = [];
-
-    foreach ($configs as $config) {
-        if ($config->config_type === 'message') {
-            $messageConfig = $config;
-        } else {
-            $otherConfigs[$config->config_type][] = $config;
-        }
-    }
-
-    $configurations = [];
-    foreach ($otherConfigs as $type => $items) {
-        $configurations[$type] = collect($items);
-    }
-
-    $addons = Addon::where('is_active', true)->get();
-
-    return response()->json([
-        'product' => [
-            'id' => $product->id,
-            'name' => $product->name,
-            'base_price' => $product->base_price,
-        ],
-        'configurations' => $configurations,
-        'addons' => $addons,
-        'message_config' => $messageConfig,
-    ]);
-}
 
     public function calculatePrice(Request $request, Product $product)
     {
@@ -122,6 +90,40 @@ public function getCustomizationsData(Product $product)
             'quantity' => $quantity,
             'total' => $total,
             'formatted_total' => 'S/. ' . number_format($total, 2)
+        ]);
+    }
+
+    // 🔥 Método para el modal de edición del carrito
+    public function getCustomizationsData(Product $product)
+    {
+        $configs = $product->configurations()->where('is_active', true)->get();
+        $messageConfig = null;
+        $otherConfigs = [];
+
+        foreach ($configs as $config) {
+            if ($config->config_type === 'message') {
+                $messageConfig = $config;
+            } else {
+                $otherConfigs[$config->config_type][] = $config;
+            }
+        }
+
+        $configurations = [];
+        foreach ($otherConfigs as $type => $items) {
+            $configurations[$type] = collect($items);
+        }
+
+        $addons = Addon::where('is_active', true)->get();
+
+        return response()->json([
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'base_price' => $product->base_price,
+            ],
+            'configurations' => $configurations,
+            'addons' => $addons,
+            'message_config' => $messageConfig,
         ]);
     }
 }
