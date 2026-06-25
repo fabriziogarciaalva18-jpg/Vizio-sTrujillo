@@ -84,10 +84,98 @@
                     <div class="col-md-2">
                         <span class="item-total">S/. {{ number_format(($item['unit_price'] ?? $item['price'] ?? 0) * $item['quantity'], 2) }}</span>
                     </div>
-                    <div class="col-md-1 text-end">
+                    <div class="col-md-2 text-end">
+                        <!-- Botón Detalles -->
+                        <button class="btn-retro-secondary btn-sm me-1" data-bs-toggle="modal" data-bs-target="#detailsModal-{{ $key }}">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <!-- Botón Eliminar -->
                         <button class="btn-retro-danger btn-sm remove-item" data-key="{{ $key }}">
                             <i class="bi bi-trash"></i>
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================= -->
+            <!-- MODAL DE DETALLES DEL PRODUCTO            -->
+            <!-- ========================================= -->
+            <div class="modal fade" id="detailsModal-{{ $key }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content modal-retro">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="bi bi-box-seam"></i> Detalles de "{{ $item['name'] }}"
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Producto -->
+                            <p><strong>Producto:</strong> {{ $item['name'] }}</p>
+                            <hr class="retro-divider">
+
+                            <!-- Personalizaciones (configuraciones) -->
+                            @if(!empty($item['selected_configs']))
+                                <h6><i class="bi bi-sliders2"></i> Personalizaciones</h6>
+                                <ul class="list-unstyled">
+                                @foreach($item['selected_configs'] as $type => $configId)
+                                    @php
+                                        $config = App\Models\ProductConfiguration::find($configId);
+                                        $label = match($type) {
+                                            'size' => 'Tamaño',
+                                            'layers' => 'Pisos',
+                                            'flavor' => 'Sabor',
+                                            'filling' => 'Relleno',
+                                            'covering' => 'Cobertura',
+                                            'shape' => 'Forma',
+                                            'color' => 'Color',
+                                            'toppings' => 'Toppings',
+                                            'decoration' => 'Decoración',
+                                            default => ucfirst($type)
+                                        };
+                                    @endphp
+                                    <li><strong>{{ $label }}:</strong> {{ $config->name ?? $configId }}</li>
+                                @endforeach
+                                </ul>
+                                <hr class="retro-divider">
+                            @endif
+
+                            <!-- Adicionales -->
+                            @if(!empty($item['selected_addons']))
+                                <h6><i class="bi bi-plus-circle"></i> Adicionales</h6>
+                                <ul class="list-unstyled">
+                                @foreach($item['selected_addons'] as $addonId)
+                                    @php
+                                        $addon = App\Models\Addon::find($addonId);
+                                    @endphp
+                                    <li>{{ $addon->name ?? $addonId }} (S/. {{ number_format($addon->price ?? 0, 2) }})</li>
+                                @endforeach
+                                </ul>
+                                <hr class="retro-divider">
+                            @endif
+
+                            <!-- Mensaje -->
+                            @if(!empty($item['message']))
+                                <p><strong><i class="bi bi-chat-text"></i> Mensaje:</strong> "{{ $item['message'] }}"</p>
+                                <hr class="retro-divider">
+                            @endif
+
+                            <!-- Precios -->
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong>Precio unitario:</strong> S/. {{ number_format($item['unit_price'] ?? $item['price'] ?? 0, 2) }}
+                                </div>
+                                <div class="col-6">
+                                    <strong>Cantidad:</strong> {{ $item['quantity'] }}
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <strong>Subtotal:</strong> S/. {{ number_format(($item['unit_price'] ?? $item['price'] ?? 0) * $item['quantity'], 2) }}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn-retro-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -148,7 +236,7 @@
         });
     });
 
-    // 🔥 ELIMINAR CON DELETE (corregido)
+    // Eliminar con DELETE
     document.querySelectorAll('.remove-item').forEach(btn => {
         btn.addEventListener('click', function() {
             const key = this.dataset.key;
