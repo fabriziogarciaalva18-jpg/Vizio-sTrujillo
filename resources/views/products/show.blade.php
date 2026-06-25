@@ -223,30 +223,7 @@
 @push('scripts')
 <script>
     // =============================================
-    // TOGGLE DE GRUPOS DE PERSONALIZACIÓN
-    // =============================================
-    document.querySelectorAll('.group-toggle').forEach(toggle => {
-        toggle.addEventListener('change', function() {
-            const group = this.dataset.group;
-            const optionsDiv = document.getElementById('options_' + group);
-            const radios = optionsDiv.querySelectorAll('.config-option');
-
-            if (this.checked) {
-                optionsDiv.style.display = 'block';
-                radios.forEach(r => r.disabled = false);
-            } else {
-                optionsDiv.style.display = 'none';
-                radios.forEach(r => {
-                    r.checked = false;
-                    r.disabled = true;
-                });
-            }
-            calculatePrice();
-        });
-    });
-
-    // =============================================
-    // CÁLCULO DE PRECIO DINÁMICO
+    // FUNCIÓN PRINCIPAL DE CÁLCULO
     // =============================================
     function calculatePrice() {
         let basePrice = parseFloat({{ $product->base_price }});
@@ -256,13 +233,15 @@
             const group = toggle.dataset.group;
             const checkedRadio = document.querySelector(`input[name="configurations[${group}"]:checked`);
             if (checkedRadio) {
-                basePrice += parseFloat(checkedRadio.dataset.price || 0);
+                const price = parseFloat(checkedRadio.dataset.price) || 0;
+                basePrice += price;
             }
         });
 
         // Sumar adicionales seleccionados
         document.querySelectorAll('.addon-checkbox:checked').forEach(checkbox => {
-            basePrice += parseFloat(checkbox.dataset.price || 0);
+            const price = parseFloat(checkbox.dataset.price) || 0;
+            basePrice += price;
         });
 
         // Sumar costo del mensaje si existe y hay texto
@@ -279,10 +258,38 @@
     }
 
     // =============================================
+    // TOGGLE DE GRUPOS DE PERSONALIZACIÓN
+    // =============================================
+    document.querySelectorAll('.group-toggle').forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const group = this.dataset.group;
+            const optionsDiv = document.getElementById('options_' + group);
+            const radios = optionsDiv.querySelectorAll('.config-option');
+
+            if (this.checked) {
+                optionsDiv.style.display = 'block';
+                radios.forEach(r => {
+                    r.disabled = false;
+                });
+            } else {
+                optionsDiv.style.display = 'none';
+                radios.forEach(r => {
+                    r.checked = false;
+                    r.disabled = true;
+                });
+            }
+            // Recalcular precio al activar/desactivar el grupo
+            calculatePrice();
+        });
+    });
+
+    // =============================================
     // EVENTOS PARA ACTUALIZAR PRECIO
     // =============================================
+    // Usamos 'click' y 'change' para asegurar que siempre se dispare
     document.querySelectorAll('.config-option, .addon-checkbox, #quantity, textarea[name="message"]').forEach(el => {
         el.addEventListener('change', calculatePrice);
+        el.addEventListener('click', calculatePrice);  // <-- AÑADIDO 'click'
         el.addEventListener('input', calculatePrice);
     });
 
@@ -295,6 +302,7 @@
         if (val > 1) {
             input.value = val - 1;
             input.dispatchEvent(new Event('change'));
+            calculatePrice();
         }
     });
     document.getElementById('incrementQty').addEventListener('click', function() {
@@ -302,6 +310,7 @@
         let val = parseInt(input.value) || 1;
         input.value = val + 1;
         input.dispatchEvent(new Event('change'));
+        calculatePrice();
     });
 
     // =============================================
