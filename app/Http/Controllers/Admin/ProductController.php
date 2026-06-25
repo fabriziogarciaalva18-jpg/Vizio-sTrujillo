@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use Illuminate\Http\Request;
+use App\Models\Addon;              // ✅ Importar fuera de la clase
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -18,13 +19,21 @@ class ProductController extends Controller
         }
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $this->checkAdmin();
-        $products = Product::with('category')->latest()->paginate(15);
-        return view('admin.products.index', compact('products'));
-    }
+        $categories = ProductCategory::where('is_active', true)->orderBy('sort_order')->get();
 
+        $query = Product::where('is_active', true)->with('category');
+        if ($request->has('category') && $request->category != 'all') {
+            $query->whereHas('category', function($q) use ($request) {
+                $q->where('slug', $request->category);
+            });
+        }
+        $products = $query->get();
+        $addons = Addon::where('is_active', true)->get(); // ✅ Uso correcto
+
+        return view('products.index', compact('categories', 'products', 'addons'));
+    }
     public function create()
     {
         $this->checkAdmin();

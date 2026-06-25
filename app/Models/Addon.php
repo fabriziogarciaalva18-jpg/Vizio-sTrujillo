@@ -10,7 +10,11 @@ class Addon extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'description', 'price', 'category', 'is_active'
+        'name',
+        'description',
+        'price',
+        'category',
+        'is_active',
     ];
 
     protected $casts = [
@@ -21,10 +25,5 @@ class Addon extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
-
-    public function scopeByCategory($query, $category)
-    {
-        return $query->where('category', $category);
     }
 }
