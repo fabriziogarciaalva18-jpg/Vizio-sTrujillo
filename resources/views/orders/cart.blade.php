@@ -129,7 +129,6 @@
         input.addEventListener('change', function() {
             const key = this.dataset.key;
             const quantity = this.value;
-
             fetch(`/cart/update/${key}`, {
                 method: 'POST',
                 headers: {
@@ -141,42 +140,52 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) updateCart();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar la cantidad');
             });
         });
     });
 
+    // 🔥 ELIMINAR CON DELETE (corregido)
     document.querySelectorAll('.remove-item').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const key = this.dataset.key;
-        if (confirm('¿Eliminar este producto del carrito?')) {
-            fetch(`/cart/remove/${key}`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert(data.message || 'Error al eliminar el producto');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al eliminar el producto');
-            });
-        }
+        btn.addEventListener('click', function() {
+            const key = this.dataset.key;
+            if (confirm('¿Eliminar este producto del carrito?')) {
+                fetch(`/cart/remove/${key}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        updateCart();
+                    } else {
+                        alert(data.message || 'Error al eliminar el producto');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al eliminar el producto. Intenta nuevamente.');
+                });
+            }
+        });
     });
-});
 
     document.querySelectorAll('.decrement').forEach(btn => {
         btn.addEventListener('click', function() {
             const key = this.dataset.key;
             const input = document.querySelector(`.cart-qty[data-key="${key}"]`);
-            if (input && input.value > 1) {
+            if (input && parseInt(input.value) > 1) {
                 input.value = parseInt(input.value) - 1;
                 input.dispatchEvent(new Event('change'));
             }

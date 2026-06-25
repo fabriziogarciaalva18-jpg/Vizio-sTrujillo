@@ -23,24 +23,17 @@ class OrderController extends Controller
         // Normalizar items (asegurar unit_price)
         $normalizedCart = [];
         foreach ($cart as $key => $item) {
-            // Si no tiene unit_price, intentar calcularlo
             if (!isset($item['unit_price'])) {
-                // Usar price o base_price como fallback
                 $item['unit_price'] = $item['price'] ?? $item['base_price'] ?? 0;
-                // Actualizar en la sesión
                 $cart[$key]['unit_price'] = $item['unit_price'];
             }
-            // Asegurar que quantity existe
             if (!isset($item['quantity'])) {
                 $item['quantity'] = 1;
                 $cart[$key]['quantity'] = 1;
             }
-            // Guardar item normalizado
             $normalizedCart[$key] = $item;
             $total += $item['unit_price'] * $item['quantity'];
         }
-
-        // Actualizar sesión con datos normalizados
         session()->put('cart', $cart);
 
         return view('orders.cart', compact('cart', 'total'));
@@ -53,47 +46,39 @@ class OrderController extends Controller
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'quantity' => 'integer|min:1|max:99'
+            'quantity'   => 'integer|min:1|max:99'
         ]);
 
         $product = Product::findOrFail($request->product_id);
         $quantity = $request->input('quantity', 1);
 
-        // Obtener configuraciones seleccionadas
         $selectedConfigs = $request->input('configurations', []);
-        $selectedAddons = $request->input('addons', []);
+        $selectedAddons   = $request->input('addons', []);
         $message = $request->input('message', '');
 
         // Calcular precio unitario con extras
         $unitPrice = $product->base_price;
 
-        // Sumar precios de configuraciones seleccionadas
-        if (!empty($selectedConfigs)) {
-            foreach ($selectedConfigs as $type => $configId) {
-                $config = ProductConfiguration::find($configId);
-                if ($config) {
-                    $unitPrice += $config->price_modifier;
-                }
+        foreach ($selectedConfigs as $type => $configId) {
+            $config = ProductConfiguration::find($configId);
+            if ($config) {
+                $unitPrice += $config->price_modifier;
             }
         }
 
-        // Sumar precios de addons seleccionados
-        if (!empty($selectedAddons)) {
-            foreach ($selectedAddons as $addonId) {
-                $addon = Addon::find($addonId);
-                if ($addon) {
-                    $unitPrice += $addon->price;
-                }
+        foreach ($selectedAddons as $addonId) {
+            $addon = Addon::find($addonId);
+            if ($addon) {
+                $unitPrice += $addon->price;
             }
         }
 
-        // Sumar precio del mensaje (si existe y hay texto)
         $messagePrice = $request->input('message_price', 0);
         if (!empty($message) && $messagePrice > 0) {
             $unitPrice += $messagePrice;
         }
 
-        // Guardar en el carrito (sesión)
+        // Guardar en sesión
         $cart = session()->get('cart', []);
         $itemKey = $product->id . '_' . md5(json_encode($selectedConfigs) . json_encode($selectedAddons) . $message);
 
@@ -101,36 +86,35 @@ class OrderController extends Controller
             $cart[$itemKey]['quantity'] += $quantity;
         } else {
             $cart[$itemKey] = [
-                'id' => $product->id,
-                'name' => $product->name,
-                'base_price' => $product->base_price,
-                'unit_price' => $unitPrice,
-                'quantity' => $quantity,
+                'id'               => $product->id,
+                'name'             => $product->name,
+                'base_price'       => $product->base_price,
+                'unit_price'       => $unitPrice,
+                'quantity'         => $quantity,
                 'selected_configs' => $selectedConfigs,
-                'selected_addons' => $selectedAddons,
-                'message' => $message,
-                'image' => $product->image_url,
+                'selected_addons'  => $selectedAddons,
+                'message'          => $message,
+                'image'            => $product->image_url,
             ];
         }
 
         session()->put('cart', $cart);
-
         return redirect()->back()->with('success', $product->name . ' agregado al carrito');
     }
 
     /**
-     * Eliminar producto del carrito
+     * Eliminar producto del carrito (JSON)
      */
-public function removeFromCart($id)
-{
-    $cart = session()->get('cart', []);
-    if (isset($cart[$id])) {
-        unset($cart[$id]);
-        session()->put('cart', $cart);
-        return response()->json(['success' => true]);
+    public function removeFromCart($id)
+    {
+        $cart = session()->get('cart', []);
+        if (isset($cart[$id])) {
+            unset($cart[$id]);
+            session()->put('cart', $cart);
+            return response()->json(['success' => true, 'message' => 'Producto eliminado']);
+        }
+        return response()->json(['success' => false, 'message' => 'Producto no encontrado'], 404);
     }
-    return response()->json(['success' => false, 'message' => 'Producto no encontrado'], 404);
-}
 
     /**
      * Actualizar cantidad
@@ -142,8 +126,9 @@ public function removeFromCart($id)
         if (isset($cart[$id])) {
             $cart[$id]['quantity'] = $request->quantity;
             session()->put('cart', $cart);
+            return response()->json(['success' => true]);
         }
-        return redirect()->route('cart');
+        return response()->json(['success' => false], 404);
     }
 
     /**
@@ -161,7 +146,6 @@ public function removeFromCart($id)
             $price = $item['unit_price'] ?? $item['price'] ?? 0;
             $subtotal += $price * $item['quantity'];
         }
-
         $delivery_fee = config('payments.delivery_fee', 800);
         $total = $subtotal + $delivery_fee;
 
@@ -175,10 +159,10 @@ public function removeFromCart($id)
     {
         $request->validate([
             'delivery_address' => 'required|string',
-            'district' => 'required|string',
-            'phone' => 'required|string',
-            'delivery_date' => 'required|date|after:today',
-            'payment_method' => 'required|in:yape,plin,transferencia,contraentrega',
+            'district'         => 'required|string',
+            'phone'            => 'required|string',
+            'delivery_date'    => 'required|date|after:today',
+            'payment_method'   => 'required|in:yape,plin,transferencia,contraentrega',
             'special_instructions' => 'nullable|string',
         ]);
 
@@ -210,28 +194,28 @@ public function removeFromCart($id)
 
         try {
             $order = Order::create([
-                'user_id' => auth()->id(),
-                'order_number' => $orderNumber,
-                'order_type' => 'delivery',
-                'status' => $paymentStatus == 'paid' ? 'confirmed' : 'pending',
-                'delivery_date' => $checkoutData['delivery_date'],
-                'delivery_address' => $checkoutData['delivery_address'],
-                'district' => $checkoutData['district'],
-                'phone' => $checkoutData['phone'],
-                'subtotal' => $subtotal,
-                'delivery_fee' => $deliveryFee,
-                'total' => $total,
-                'payment_method' => $checkoutData['payment_method'],
-                'payment_status' => $paymentStatus,
+                'user_id'            => auth()->id(),
+                'order_number'       => $orderNumber,
+                'order_type'         => 'delivery',
+                'status'             => $paymentStatus == 'paid' ? 'confirmed' : 'pending',
+                'delivery_date'      => $checkoutData['delivery_date'],
+                'delivery_address'   => $checkoutData['delivery_address'],
+                'district'           => $checkoutData['district'],
+                'phone'              => $checkoutData['phone'],
+                'subtotal'           => $subtotal,
+                'delivery_fee'       => $deliveryFee,
+                'total'              => $total,
+                'payment_method'     => $checkoutData['payment_method'],
+                'payment_status'     => $paymentStatus,
                 'special_instructions' => $checkoutData['special_instructions'] ?? null,
-                'paid_at' => $paymentStatus == 'paid' ? now() : null,
+                'paid_at'            => $paymentStatus == 'paid' ? now() : null,
             ]);
 
             foreach ($cart as $item) {
                 $customization = [
                     'selected_configs' => $item['selected_configs'] ?? [],
-                    'selected_addons'   => $item['selected_addons'] ?? [],
-                    'message'           => $item['message'] ?? '',
+                    'selected_addons'  => $item['selected_addons'] ?? [],
+                    'message'          => $item['message'] ?? '',
                 ];
                 OrderItem::create([
                     'order_id'      => $order->id,

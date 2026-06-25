@@ -8,7 +8,8 @@ use App\Models\ProductConfiguration;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
-class CustomizationController extends Controller  implements HasMiddleware
+
+class CustomizationController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
     {
@@ -29,25 +30,26 @@ class CustomizationController extends Controller  implements HasMiddleware
         if ($request->filled('product_id')) {
             $query->where('product_id', $request->product_id);
         }
-
         if ($request->filled('config_type')) {
             $query->where('config_type', $request->config_type);
         }
 
         $configurations = $query->orderBy('product_id')->orderBy('sort_order')->get();
         $products = Product::where('is_active', true)->orderBy('name')->get();
-$types = [
-            'size' => 'Tamaño',
-            'layers' => 'Número de pisos',
-            'flavor' => 'Sabor',
-            'filling' => 'Relleno',
-            'covering' => 'Cobertura',
-            'shape' => 'Forma',
-            'color' => 'Color',
-            'toppings' => 'Toppings',
-            'message' => 'Mensaje personalizado',
+
+        $types = [
+            'size'       => 'Tamaño',
+            'layers'     => 'Número de pisos',
+            'flavor'     => 'Sabor',
+            'filling'    => 'Relleno',
+            'covering'   => 'Cobertura',
+            'shape'      => 'Forma',
+            'color'      => 'Color',
+            'toppings'   => 'Toppings',
+            'message'    => 'Mensaje personalizado',
             'decoration' => 'Decoración adicional',
         ];
+
         return view('admin.customizations.index', compact('configurations', 'products', 'types'));
     }
 
@@ -55,57 +57,68 @@ $types = [
     {
         $products = Product::where('is_active', true)->orderBy('name')->get();
         $types = [
-            'size' => 'Tamaño',
-            'layers' => 'Número de pisos',
-            'flavor' => 'Sabor',
-            'filling' => 'Relleno',
-            'covering' => 'Cobertura',
-            'shape' => 'Forma',
-            'color' => 'Color',
-            'toppings' => 'Toppings',
-            'message' => 'Mensaje personalizado',
+            'size'       => 'Tamaño',
+            'layers'     => 'Número de pisos',
+            'flavor'     => 'Sabor',
+            'filling'    => 'Relleno',
+            'covering'   => 'Cobertura',
+            'shape'      => 'Forma',
+            'color'      => 'Color',
+            'toppings'   => 'Toppings',
+            'message'    => 'Mensaje personalizado',
             'decoration' => 'Decoración adicional',
         ];
         return view('admin.customizations.create', compact('products', 'types'));
     }
 
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'product_id' => 'required|exists:products,id',
-        'config_type' => 'required|in:size,layers,flavor,filling,covering,shape,color,toppings,message,decoration',
-        'name' => 'required|string|max:255',
-        'price_modifier' => 'nullable|numeric|min:0',
-        'sort_order' => 'nullable|integer|min:0',
-        'is_active' => 'nullable|boolean',
-    ]);
+    {
+        $validated = $request->validate([
+            'product_id'     => 'required|exists:products,id',
+            'config_type'    => 'required|in:size,layers,flavor,filling,covering,shape,color,toppings,message,decoration',
+            'name'           => 'required|string|max:255',
+            'price_modifier' => 'nullable|numeric|min:0',
+            'sort_order'     => 'nullable|integer|min:0',
+            'is_active'      => 'nullable|boolean',
+        ]);
 
-    $validated['is_active'] = $request->has('is_active');
-    $validated['sort_order'] = $request->input('sort_order', 0);
-    $validated['price_modifier'] = $request->input('price_modifier', 0);
+        $validated['is_active'] = $request->has('is_active');
+        $validated['sort_order'] = $request->input('sort_order', 0);
+        $validated['price_modifier'] = $request->input('price_modifier', 0);
 
-    ProductConfiguration::create($validated);
+        ProductConfiguration::create($validated);
 
-    return redirect()->route('admin.customizations.index')
-        ->with('success', 'Personalización creada exitosamente.');
-}
+        return redirect()->route('admin.customizations.index')
+            ->with('success', 'Personalización creada exitosamente.');
+    }
 
     public function edit(ProductConfiguration $customization)
     {
         $products = Product::where('is_active', true)->orderBy('name')->get();
-        $types = ['size', 'layers', 'flavor', 'filling', 'covering'];
+        $types = [
+            'size'       => 'Tamaño',
+            'layers'     => 'Número de pisos',
+            'flavor'     => 'Sabor',
+            'filling'    => 'Relleno',
+            'covering'   => 'Cobertura',
+            'shape'      => 'Forma',
+            'color'      => 'Color',
+            'toppings'   => 'Toppings',
+            'message'    => 'Mensaje personalizado',
+            'decoration' => 'Decoración adicional',
+        ];
         return view('admin.customizations.edit', compact('customization', 'products', 'types'));
     }
 
     public function update(Request $request, ProductConfiguration $customization)
     {
         $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'config_type' => 'required|in:size,layers,flavor,filling,covering',
-            'name' => 'required|string|max:255',
+            'product_id'     => 'required|exists:products,id',
+            'config_type'    => 'required|in:size,layers,flavor,filling,covering,shape,color,toppings,message,decoration',
+            'name'           => 'required|string|max:255',
             'price_modifier' => 'nullable|numeric|min:0',
-            'sort_order' => 'nullable|integer|min:0',
-            'is_active' => 'nullable|boolean',
+            'sort_order'     => 'nullable|integer|min:0',
+            'is_active'      => 'nullable|boolean',
         ]);
 
         $validated['is_active'] = $request->has('is_active');

@@ -5,10 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ProductCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
-use Illuminate\Support\Str;
-class CategoryController extends Controller
+
+class CategoryController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
     {
@@ -36,9 +37,10 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
-            'sort_order' => 'nullable|integer|min:0',
+            'sort_order'  => 'nullable|integer|min:0',
+            'is_active'   => 'nullable|boolean',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -59,9 +61,10 @@ class CategoryController extends Controller
     public function update(Request $request, ProductCategory $category)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
-            'sort_order' => 'nullable|integer|min:0',
+            'sort_order'  => 'nullable|integer|min:0',
+            'is_active'   => 'nullable|boolean',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -80,7 +83,6 @@ class CategoryController extends Controller
             return redirect()->route('admin.categories.index')
                 ->with('error', 'No se puede eliminar una categoría que tiene productos asociados.');
         }
-
         $category->delete();
         return redirect()->route('admin.categories.index')
             ->with('success', 'Categoría eliminada.');
