@@ -332,111 +332,115 @@
         });
     });
 
-    function renderEditForm(data, key) {
-        const modalBody = document.getElementById('editModalBody');
-        const cart = @json($cart);
-        const currentItem = cart[key];
+function renderEditForm(data, key) {
+    const modalBody = document.getElementById('editModalBody');
+    const cart = @json($cart);
+    const currentItem = cart[key];
 
-        let html = `<form id="editForm">`;
-        html += `<input type="hidden" name="cart_key" value="${key}">`;
+    let html = `<form id="editForm">`;
+    html += `<input type="hidden" name="cart_key" value="${key}">`;
 
-        // Producto y precio base
-        html += `<p><strong>Producto:</strong> ${data.product.name}</p>`;
+    // Producto y precio base
+    html += `<p><strong>Producto:</strong> ${data.product.name}</p>`;
 
-        // ===== CONFIGURACIONES =====
-        const configs = data.configurations;
-        for (const [type, items] of Object.entries(configs)) {
-            const labelMap = {
-                'size': 'Tamaño',
-                'layers': 'Pisos',
-                'flavor': 'Sabor',
-                'filling': 'Relleno',
-                'covering': 'Cobertura',
-                'shape': 'Forma',
-                'color': 'Color',
-                'toppings': 'Toppings',
-                'decoration': 'Decoración'
-            };
-            const label = labelMap[type] || type;
-            html += `<div class="mb-3"><label class="form-label fw-bold">${label}</label><div class="d-flex flex-wrap gap-2">`;
-            // Recuperar selección actual
-            const currentSelected = currentItem.selected_configs[type] ?? null;
-            items.forEach(item => {
-                const checked = (item.id == currentSelected) ? 'checked' : '';
-                html += `
-                    <label class="custom-option">
-                        <input type="radio" name="configurations[${type}]" value="${item.id}" data-price="${item.price_modifier}" ${checked}>
-                        <span class="option-label">
-                            ${item.name}
-                            ${item.price_modifier > 0 ? `<span class="badge-price">+ S/. ${item.price_modifier.toFixed(2)}</span>` : ''}
-                        </span>
-                    </label>
-                `;
-            });
-            html += `</div></div>`;
-        }
-
-        // ===== MENSAJE PERSONALIZADO =====
-        if (data.message_config) {
-            const msg = data.message_config;
+    // ===== CONFIGURACIONES =====
+    const configs = data.configurations;
+    for (const [type, items] of Object.entries(configs)) {
+        const labelMap = {
+            'size': 'Tamaño',
+            'layers': 'Pisos',
+            'flavor': 'Sabor',
+            'filling': 'Relleno',
+            'covering': 'Cobertura',
+            'shape': 'Forma',
+            'color': 'Color',
+            'toppings': 'Toppings',
+            'decoration': 'Decoración'
+        };
+        const label = labelMap[type] || type;
+        html += `<div class="mb-3"><label class="form-label fw-bold">${label}</label><div class="d-flex flex-wrap gap-2">`;
+        const currentSelected = currentItem.selected_configs[type] ?? null;
+        items.forEach(item => {
+            const checked = (item.id == currentSelected) ? 'checked' : '';
+            const price = parseFloat(item.price_modifier) || 0; // ✅ Convertir a número
             html += `
-                <div class="mb-3">
-                    <label class="form-label fw-bold"><i class="bi bi-chat-text"></i> Mensaje personalizado ${msg.price_modifier > 0 ? `(+ S/. ${msg.price_modifier.toFixed(2)})` : ''}</label>
-                    <textarea name="message" class="form-control form-control-retro" rows="2" placeholder="Escribe el mensaje...">${currentItem.message || ''}</textarea>
-                    <input type="hidden" name="message_price" value="${msg.price_modifier}">
-                </div>
+                <label class="custom-option">
+                    <input type="radio" name="configurations[${type}]" value="${item.id}" data-price="${price}" ${checked}>
+                    <span class="option-label">
+                        ${item.name}
+                        ${price > 0 ? `<span class="badge-price">+ S/. ${price.toFixed(2)}</span>` : ''}
+                    </span>
+                </label>
             `;
-        }
+        });
+        html += `</div></div>`;
+    }
 
-        // ===== ADICIONALES =====
-        if (data.addons && data.addons.length > 0) {
-            html += `<div class="mb-3"><label class="form-label fw-bold"><i class="bi bi-plus-circle"></i> Adicionales</label><div class="row g-2">`;
-            const currentAddons = currentItem.selected_addons || [];
-            data.addons.forEach(addon => {
-                const checked = currentAddons.includes(addon.id) ? 'checked' : '';
-                html += `
-                    <div class="col-12 col-md-6">
-                        <label class="custom-option addon-option">
-                            <input type="checkbox" name="addons[]" value="${addon.id}" data-price="${addon.price}" ${checked}>
-                            <span class="option-label">
-                                ${addon.name}
-                                <small class="text-muted d-block">${addon.description}</small>
-                                <span class="badge-price">+ S/. ${addon.price.toFixed(2)}</span>
-                            </span>
-                        </label>
-                    </div>
-                `;
-            });
-            html += `</div></div>`;
-        }
-
-        // ===== CANTIDAD =====
+    // ===== MENSAJE PERSONALIZADO =====
+    if (data.message_config) {
+        const msg = data.message_config;
+        const msgPrice = parseFloat(msg.price_modifier) || 0;
         html += `
             <div class="mb-3">
-                <label class="form-label fw-bold"><i class="bi bi-hash"></i> Cantidad</label>
-                <div class="d-flex align-items-center gap-3">
-                    <button type="button" class="btn-retro-secondary btn-sm edit-decrement">−</button>
-                    <input type="number" name="quantity" id="editQuantity" value="${currentItem.quantity}" min="1" class="form-control form-control-retro text-center" style="width: 80px;">
-                    <button type="button" class="btn-retro-secondary btn-sm edit-increment">+</button>
-                </div>
+                <label class="form-label fw-bold"><i class="bi bi-chat-text"></i> Mensaje personalizado ${msgPrice > 0 ? `(+ S/. ${msgPrice.toFixed(2)})` : ''}</label>
+                <textarea name="message" class="form-control form-control-retro" rows="2" placeholder="Escribe el mensaje...">${currentItem.message || ''}</textarea>
+                <input type="hidden" name="message_price" value="${msgPrice}">
             </div>
         `;
-
-        // ===== TOTAL PROVISIONAL =====
-        html += `
-            <hr>
-            <div class="d-flex justify-content-between">
-                <span class="fw-bold">Total con extras</span>
-                <span class="fw-bold" id="editTotalPrice">S/. ${currentItem.unit_price * currentItem.quantity}</span>
-            </div>
-        `;
-
-        html += `</form>`;
-        modalBody.innerHTML = html;
-
-        // Añadir eventos de precio dinámico (similar a producto show)
-        attachEditPriceListeners(data.product.base_price);
     }
+
+    // ===== ADICIONALES =====
+    if (data.addons && data.addons.length > 0) {
+        html += `<div class="mb-3"><label class="form-label fw-bold"><i class="bi bi-plus-circle"></i> Adicionales</label><div class="row g-2">`;
+        const currentAddons = currentItem.selected_addons || [];
+        data.addons.forEach(addon => {
+            const checked = currentAddons.includes(addon.id) ? 'checked' : '';
+            const price = parseFloat(addon.price) || 0; // ✅ Convertir a número
+            html += `
+                <div class="col-12 col-md-6">
+                    <label class="custom-option addon-option">
+                        <input type="checkbox" name="addons[]" value="${addon.id}" data-price="${price}" ${checked}>
+                        <span class="option-label">
+                            ${addon.name}
+                            <small class="text-muted d-block">${addon.description || ''}</small>
+                            <span class="badge-price">+ S/. ${price.toFixed(2)}</span>
+                        </span>
+                    </label>
+                </div>
+            `;
+        });
+        html += `</div></div>`;
+    }
+
+    // ===== CANTIDAD =====
+    html += `
+        <div class="mb-3">
+            <label class="form-label fw-bold"><i class="bi bi-hash"></i> Cantidad</label>
+            <div class="d-flex align-items-center gap-3">
+                <button type="button" class="btn-retro-secondary btn-sm edit-decrement">−</button>
+                <input type="number" name="quantity" id="editQuantity" value="${currentItem.quantity}" min="1" class="form-control form-control-retro text-center" style="width: 80px;">
+                <button type="button" class="btn-retro-secondary btn-sm edit-increment">+</button>
+            </div>
+        </div>
+    `;
+
+    // ===== TOTAL PROVISIONAL =====
+    const unitPrice = parseFloat(currentItem.unit_price) || 0;
+    const qty = parseInt(currentItem.quantity) || 1;
+    html += `
+        <hr>
+        <div class="d-flex justify-content-between">
+            <span class="fw-bold">Total con extras</span>
+            <span class="fw-bold" id="editTotalPrice">S/. ${(unitPrice * qty).toFixed(2)}</span>
+        </div>
+    `;
+
+    html += `</form>`;
+    modalBody.innerHTML = html;
+
+    // Añadir eventos de precio dinámico
+    attachEditPriceListeners(data.product.base_price);
+}
 
     function attachEditPriceListeners(basePrice) {
         const form = document.getElementById('editForm');

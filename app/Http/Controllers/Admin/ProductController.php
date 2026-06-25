@@ -155,4 +155,52 @@ class ProductController extends Controller
         $product->update(['is_active' => !$product->is_active]);
         return redirect()->back()->with('success', 'Estado actualizado.');
     }
+    public function getCustomizationsData(Product $product)
+{
+    $configs = $product->configurations()->where('is_active', true)->get();
+    $messageConfig = null;
+    $otherConfigs = [];
+
+    foreach ($configs as $config) {
+        if ($config->config_type === 'message') {
+            $messageConfig = $config;
+        } else {
+            $otherConfigs[$config->config_type][] = $config;
+        }
+    }
+
+    $configurations = [];
+    foreach ($otherConfigs as $type => $items) {
+        $configurations[$type] = collect($items)->map(function($item) {
+            return [
+                'id' => $item->id,
+                'name' => $item->name,
+                'price_modifier' => (float) $item->price_modifier, // ✅ Convertir a float
+            ];
+        });
+    }
+
+    $addons = Addon::where('is_active', true)->get()->map(function($addon) {
+        return [
+            'id' => $addon->id,
+            'name' => $addon->name,
+            'description' => $addon->description,
+            'price' => (float) $addon->price, // ✅ Convertir a float
+        ];
+    });
+
+    return response()->json([
+        'product' => [
+            'id' => $product->id,
+            'name' => $product->name,
+            'base_price' => (float) $product->base_price,
+        ],
+        'configurations' => $configurations,
+        'addons' => $addons,
+        'message_config' => $messageConfig ? [
+            'id' => $messageConfig->id,
+            'price_modifier' => (float) $messageConfig->price_modifier,
+        ] : null,
+    ]);
+}
 }

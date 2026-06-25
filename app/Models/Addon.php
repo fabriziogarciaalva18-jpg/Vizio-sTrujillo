@@ -9,18 +9,8 @@ class Addon extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'description',
-        'price',
-        'category',
-        'is_active',
-    ];
-
-    protected $casts = [
-        'price' => 'decimal:2',
-        'is_active' => 'boolean',
-    ];
+    protected $fillable = ['name', 'description', 'price', 'category', 'is_active'];
+    protected $casts = ['price' => 'decimal:2', 'is_active' => 'boolean'];
 
     public function scopeActive($query)
     {
