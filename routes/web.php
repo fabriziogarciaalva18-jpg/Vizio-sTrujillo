@@ -13,12 +13,24 @@ use App\Http\Controllers\Admin\CustomizationController;
 use App\Http\Middleware\CheckUserActive;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Delivery\DeliveryController;
 
 // =============================================
 // RUTAS PÚBLICAS
 // =============================================
 Route::get('/', [HomeController::class, 'index'])->name('home');
-
+// =============================================
+// RUTAS DEL REPARTIDOR
+// =============================================
+Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function () {
+    Route::prefix('delivery')->name('delivery.')->group(function () {
+        Route::get('/dashboard', [DeliveryController::class, 'dashboard'])->name('dashboard');
+        Route::get('/orders', [DeliveryController::class, 'orders'])->name('orders');
+        Route::get('/orders/{order}', [DeliveryController::class, 'show'])->name('orders.show');
+        Route::post('/orders/{order}/confirm', [DeliveryController::class, 'confirmDelivery'])->name('orders.confirm');
+        Route::post('/orders/{order}/failed', [DeliveryController::class, 'markAsFailed'])->name('orders.failed');
+    });
+});
 // Ruta para servir avatares (pública)
 Route::get('/avatar/{filename}', function ($filename) {
     $path = storage_path('app/public/avatars/' . $filename);
