@@ -6,11 +6,8 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
-class DeliveryUserSeeder extends Seeder
+class DeliverySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         // Crear o actualizar el usuario repartidor
@@ -25,7 +22,6 @@ class DeliveryUserSeeder extends Seeder
             ]
         );
 
-        // Si el usuario ya existía pero no era repartidor, actualizarlo
         if (!$user->is_delivery) {
             $user->is_delivery = true;
             $user->save();
