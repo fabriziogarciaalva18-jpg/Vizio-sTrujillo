@@ -37,6 +37,7 @@ class OrderController extends Controller
 
 public function processPayment(Request $request)
 {
+    // Validaciones básicas
     $request->validate([
         'delivery_address' => 'required_if:delivery_type,delivery|string|max:255',
         'district' => 'nullable|string|max:255',
@@ -49,8 +50,8 @@ public function processPayment(Request $request)
         'payment_method' => 'required|in:yape,plin,transferencia,contraentrega',
         'special_instructions' => 'nullable|string',
         'delivery_type' => 'required|in:pickup,delivery',
-        'address_lat' => 'nullable|numeric|between:-20,-5',
-        'address_lng' => 'nullable|numeric|between:-85,-70',
+        'address_lat' => 'required_if:delivery_type,delivery|numeric|between:-20,-5',
+        'address_lng' => 'required_if:delivery_type,delivery|numeric|between:-85,-70',
         'delivery_distance' => 'nullable|numeric|min:0',
         'delivery_fee' => 'nullable|numeric|min:0',
     ]);
@@ -67,6 +68,7 @@ public function processPayment(Request $request)
     $lng = null;
 
     if ($deliveryType === 'delivery') {
+        // ✅ RE-VALIDAR EN EL SERVIDOR (evita que el usuario manipule el frontend)
         $locationService = new LocationService();
         $geo = $locationService->geocode($request->delivery_address);
 
@@ -74,9 +76,11 @@ public function processPayment(Request $request)
             return back()->with('error', $geo['error'] ?? 'Dirección inválida. Asegúrate de que esté en La Libertad.');
         }
 
+        // Usar las coordenadas reales (no las que vengan del frontend)
         $lat = $geo['lat'];
         $lng = $geo['lng'];
 
+        // Calcular distancia usando las coordenadas reales
         $storeLat = config('delivery.store.lat');
         $storeLng = config('delivery.store.lng');
 
@@ -91,25 +95,27 @@ public function processPayment(Request $request)
         }
 
         $deliveryFee = $feeResult['fee'];
+
+        // Forzar los valores reales (ignorar lo que venga del frontend)
+        $request->merge([
+            'address_lat' => $lat,
+            'address_lng' => $lng,
+            'delivery_distance' => $deliveryDistance,
+            'delivery_fee' => $deliveryFee,
+        ]);
     } else {
-        // Pickup: sin envío, se puede usar dirección genérica o dejarla vacía
-        $request->merge(['delivery_address' => 'Recojo en tienda - Los Cedros 154, Víctor Larco Herrera']);
+        // Recojo en tienda: dirección fija y sin costo de envío
+        $request->merge([
+            'delivery_address' => 'Recojo en tienda - Los Cedros 154, Víctor Larco Herrera',
+            'address_lat' => null,
+            'address_lng' => null,
+            'delivery_distance' => null,
+            'delivery_fee' => 0,
+        ]);
     }
 
-    // Guardar datos del checkout en sesión
-    session()->put('checkout_data', [
-        'delivery_address' => $request->delivery_address,
-        'district' => $request->district,
-        'phone' => $request->phone,
-        'delivery_date' => $request->delivery_date,
-        'payment_method' => $request->payment_method,
-        'special_instructions' => $request->special_instructions,
-        'delivery_type' => $deliveryType,
-        'address_lat' => $lat,
-        'address_lng' => $lng,
-        'delivery_distance' => $deliveryDistance,
-        'delivery_fee' => $deliveryFee,
-    ]);
+    // Guardar datos en sesión (con valores reales)
+    session()->put('checkout_data', $request->all());
 
     return redirect()->route('payment.method', ['method' => $request->payment_method]);
 }

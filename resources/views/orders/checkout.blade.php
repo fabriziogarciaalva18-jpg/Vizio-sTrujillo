@@ -34,11 +34,11 @@
                     @csrf
 
                     <!-- ========================================= -->
-                    <!-- TIPO DE ENTREGA: RECOJO vs DOMICILIO      -->
+                    <!-- TIPO DE ENTREGA                          -->
                     <!-- ========================================= -->
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Tipo de entrega *</label>
-                        <div class="d-flex gap-3">
+                        <label class="form-label fw-bold"><i class="bi bi-truck"></i> Tipo de entrega *</label>
+                        <div class="d-flex gap-4">
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="delivery_type" id="deliveryPickup" value="pickup" checked>
                                 <label class="form-check-label" for="deliveryPickup">
@@ -52,55 +52,53 @@
                                 </label>
                             </div>
                         </div>
-                        <small class="text-muted">Tienda: Los Cedros 154, Víctor Larco Herrera, Trujillo</small>
+                        <small class="text-muted"><i class="bi bi-geo-alt"></i> Tienda: Los Cedros 154, Víctor Larco Herrera, Trujillo</small>
                     </div>
 
                     <!-- ========================================= -->
-                    <!-- UBICACIÓN (solo para delivery)             -->
+                    <!-- UBICACIÓN (solo para delivery)            -->
                     <!-- ========================================= -->
                     <div id="deliveryFields" style="display: none;">
                         <div class="mb-3">
-                            <label class="form-label">Buscar dirección *</label>
+                            <label class="form-label"><i class="bi bi-search"></i> Buscar dirección *</label>
                             <input type="text" id="addressSearch" class="form-control form-control-retro" placeholder="Escribe tu dirección (ej: Av. La Marina 123, Trujillo)">
-                            <div id="addressSuggestions" class="list-group mt-1" style="position: absolute; z-index: 1000; width: 100%;"></div>
+                            <div id="addressSuggestions" class="list-group mt-1" style="position: absolute; z-index: 1000; width: 100%; max-height: 200px; overflow-y: auto;"></div>
+                            <div id="locationValidation" class="mt-1"></div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Dirección seleccionada</label>
+                            <label class="form-label"><i class="bi bi-geo"></i> Dirección seleccionada</label>
                             <input type="text" name="delivery_address" id="deliveryAddress" class="form-control form-control-retro" readonly>
-                            <input type="hidden" name="address_lat" id="addressLat">
-                            <input type="hidden" name="address_lng" id="addressLng">
-                            <input type="hidden" name="delivery_distance" id="deliveryDistance">
-                            <input type="hidden" name="delivery_fee" id="deliveryFee">
-                            <small class="text-muted" id="locationValidation"></small>
+                            <input type="hidden" name="address_lat" id="addressLat" value="">
+                            <input type="hidden" name="address_lng" id="addressLng" value="">
+                            <input type="hidden" name="delivery_distance" id="deliveryDistance" value="">
+                            <input type="hidden" name="delivery_fee" id="deliveryFee" value="">
+                            <small class="text-muted">Selecciona una dirección de la lista de sugerencias.</small>
                         </div>
 
-                        <!-- ========================================= -->
-                        <!-- DISTRITO Y REFERENCIA                    -->
-                        <!-- ========================================= -->
                         <div class="mb-3">
-                            <label class="form-label">Distrito *</label>
-                            <input type="text" name="district" class="form-control form-control-retro" placeholder="Ej: Víctor Larco, Trujillo">
+                            <label class="form-label"><i class="bi bi-pin-map"></i> Distrito</label>
+                            <input type="text" name="district" class="form-control form-control-retro" placeholder="Ej: Víctor Larco, Trujillo" id="districtInput">
                         </div>
                     </div>
 
                     <!-- ========================================= -->
-                    <!-- TELÉFONO (con validación)                 -->
+                    <!-- TELÉFONO                                 -->
                     <!-- ========================================= -->
                     <div class="mb-3">
-                        <label class="form-label">Teléfono *</label>
+                        <label class="form-label"><i class="bi bi-phone"></i> Teléfono *</label>
                         <input type="tel" name="phone" class="form-control form-control-retro" placeholder="987654321" required>
-                        <small class="text-muted">Número de 9 dígitos que comienza con 9 (ej: 987654321)</small>
+                        <small class="text-muted"><i class="bi bi-info-circle"></i> Número de 9 dígitos que comienza con 9 (ej: 987654321)</small>
                         @error('phone')
                             <span class="text-danger small">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <!-- ========================================= -->
-                    <!-- FECHA DE ENTREGA                          -->
+                    <!-- FECHA DE ENTREGA                         -->
                     <!-- ========================================= -->
                     <div class="mb-3">
-                        <label class="form-label">Fecha de entrega *</label>
+                        <label class="form-label"><i class="bi bi-calendar"></i> Fecha de entrega *</label>
                         <input type="date" name="delivery_date" class="form-control form-control-retro" min="{{ date('Y-m-d', strtotime('+1 day')) }}" required>
                     </div>
 
@@ -108,12 +106,12 @@
                     <!-- MÉTODO DE PAGO                           -->
                     <!-- ========================================= -->
                     <div class="mb-3">
-                        <label class="form-label">Método de pago *</label>
+                        <label class="form-label"><i class="bi bi-credit-card"></i> Método de pago *</label>
                         <select name="payment_method" class="form-select form-control-retro" required>
-                            <option value="yape">📱 YAPE</option>
-                            <option value="plin">📱 PLIN</option>
-                            <option value="transferencia">🏦 Transferencia bancaria</option>
-                            <option value="contraentrega">💵 Contra entrega</option>
+                            <option value="yape"><i class="bi bi-phone"></i> YAPE</option>
+                            <option value="plin"><i class="bi bi-phone"></i> PLIN</option>
+                            <option value="transferencia"><i class="bi bi-bank"></i> Transferencia bancaria</option>
+                            <option value="contraentrega"><i class="bi bi-cash-stack"></i> Contra entrega</option>
                         </select>
                     </div>
 
@@ -121,12 +119,12 @@
                     <!-- INSTRUCCIONES ESPECIALES                  -->
                     <!-- ========================================= -->
                     <div class="mb-3">
-                        <label class="form-label">Instrucciones especiales</label>
+                        <label class="form-label"><i class="bi bi-chat-text"></i> Instrucciones especiales</label>
                         <textarea name="special_instructions" class="form-control form-control-retro" rows="3"></textarea>
                     </div>
 
                     <div class="mt-4">
-                        <button type="submit" class="btn-retro-primary w-100 py-2">
+                        <button type="submit" class="btn-retro-primary w-100 py-2" id="submitBtn">
                             <i class="bi bi-credit-card"></i> CONTINUAR AL PAGO
                         </button>
                     </div>
@@ -135,7 +133,7 @@
         </div>
         <div class="col-lg-5">
             <div class="profile-card">
-                <h3 class="profile-section-title">RESUMEN</h3>
+                <h3 class="profile-section-title"><i class="bi bi-receipt"></i> RESUMEN</h3>
                 @foreach($cart as $item)
                 <div class="d-flex justify-content-between mb-2">
                     <span>{{ $item['name'] }} x{{ $item['quantity'] }}</span>
@@ -148,11 +146,11 @@
                     <span id="subtotalDisplay">S/. {{ number_format($subtotal, 2) }}</span>
                 </div>
                 <div class="d-flex justify-content-between" id="deliveryFeeRow">
-                    <span>Envío</span>
+                    <span><i class="bi bi-truck"></i> Envío</span>
                     <span id="deliveryFeeDisplay">S/. 0.00</span>
                 </div>
                 <div class="d-flex justify-content-between text-muted small" id="distanceDisplay" style="display: none;">
-                    <span>Distancia</span>
+                    <span><i class="bi bi-rulers"></i> Distancia</span>
                     <span id="distanceText">0 km</span>
                 </div>
                 <hr>
@@ -186,12 +184,15 @@
         const subtotalDisplay = document.getElementById('subtotalDisplay');
         const totalDisplay = document.getElementById('totalDisplay');
         const locationValidation = document.getElementById('locationValidation');
+        const submitBtn = document.getElementById('submitBtn');
+        const districtInput = document.getElementById('districtInput');
 
         const storeLat = {{ config('delivery.store.lat') }};
         const storeLng = {{ config('delivery.store.lng') }};
 
         let selectedLat = null;
         let selectedLng = null;
+        let isAddressValid = false;
 
         // Toggle campos de delivery
         pickupRadio.addEventListener('change', function() {
@@ -199,6 +200,7 @@
                 deliveryFields.style.display = 'none';
                 deliveryFeeDisplay.textContent = 'S/. 0.00';
                 distanceDisplay.style.display = 'none';
+                isAddressValid = true; // Recojo no necesita validación
                 updateTotal();
             }
         });
@@ -206,20 +208,23 @@
         deliveryRadio.addEventListener('change', function() {
             if (this.checked) {
                 deliveryFields.style.display = 'block';
-                // Si ya hay una dirección seleccionada, recalcular
+                isAddressValid = false;
                 if (selectedLat && selectedLng) {
                     calculateDelivery(selectedLat, selectedLng);
                 }
             }
         });
 
-        // Búsqueda de direcciones con Nominatim (OpenStreetMap)
+        // Búsqueda de direcciones con Nominatim
         let searchTimeout;
         addressSearch.addEventListener('input', function() {
             clearTimeout(searchTimeout);
             const query = this.value.trim();
             if (query.length < 3) {
                 suggestions.innerHTML = '';
+                isAddressValid = false;
+                locationValidation.innerHTML = '';
+                deliveryAddress.value = '';
                 return;
             }
 
@@ -246,20 +251,29 @@
                                 addressLng.value = selectedLng;
                                 suggestions.innerHTML = '';
 
-                                // Verificar región
+                                // Verificar región en el frontend (también lo hará el backend)
                                 const addressData = item.address || {};
                                 const region = addressData.state || addressData.region || '';
-                                if (!region.toLowerCase().includes('la libertad') && !region.toLowerCase().includes('trujillo')) {
+                                const city = addressData.city || addressData.town || addressData.village || '';
+                                if (!region.toLowerCase().includes('la libertad') && !region.toLowerCase().includes('trujillo') && !city.toLowerCase().includes('trujillo')) {
                                     locationValidation.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> La dirección debe estar en La Libertad.</span>';
                                     deliveryAddress.value = '';
                                     selectedLat = null;
                                     selectedLng = null;
                                     addressLat.value = '';
                                     addressLng.value = '';
+                                    isAddressValid = false;
                                     return;
                                 }
 
                                 locationValidation.innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> Ubicación válida en La Libertad.</span>';
+                                isAddressValid = true;
+
+                                // Extraer distrito si está disponible
+                                const district = addressData.suburb || addressData.city_district || addressData.town || '';
+                                if (district) {
+                                    districtInput.value = district;
+                                }
 
                                 if (deliveryRadio.checked) {
                                     calculateDelivery(selectedLat, selectedLng);
@@ -269,9 +283,16 @@
                         });
                     })
                     .catch(() => {
-                        suggestions.innerHTML = '<div class="list-group-item text-danger">Error al buscar direcciones. Intenta nuevamente.</div>';
+                        suggestions.innerHTML = '<div class="list-group-item text-danger"><i class="bi bi-exclamation-triangle"></i> Error al buscar direcciones. Intenta nuevamente.</div>';
                     });
             }, 500);
+        });
+
+        // Cerrar sugerencias al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#addressSearch') && !e.target.closest('#addressSuggestions')) {
+                suggestions.innerHTML = '';
+            }
         });
 
         // Calcular distancia y envío
@@ -285,12 +306,10 @@
                     if (data.routes && data.routes.length > 0) {
                         distanceKm = data.routes[0].distance / 1000;
                     } else {
-                        // Fallback: Haversine (distancia en línea recta)
                         distanceKm = haversineDistance(storeLat, storeLng, lat, lng);
                     }
                     distanceKm = Math.round(distanceKm * 100) / 100;
 
-                    // Calcular tarifa
                     const baseFee = {{ config('delivery.fee.base') }};
                     const perKm = {{ config('delivery.fee.per_km') }};
                     const freeDistance = {{ config('delivery.fee.free_distance') }};
@@ -307,6 +326,7 @@
                         distanceDisplay.style.display = 'block';
                         deliveryFee.value = 0;
                         deliveryDistance.value = distanceKm;
+                        isAddressValid = false;
                         updateTotal();
                         return;
                     }
@@ -316,10 +336,11 @@
                     distanceDisplay.style.display = 'block';
                     deliveryFee.value = fee;
                     deliveryDistance.value = distanceKm;
+                    isAddressValid = true;
                     updateTotal();
                 })
                 .catch(() => {
-                    // Fallback con Haversine
+                    // Fallback Haversine
                     const distanceKm = haversineDistance(storeLat, storeLng, lat, lng);
                     const baseFee = {{ config('delivery.fee.base') }};
                     const perKm = {{ config('delivery.fee.per_km') }};
@@ -337,6 +358,7 @@
                         distanceDisplay.style.display = 'block';
                         deliveryFee.value = 0;
                         deliveryDistance.value = distanceKm;
+                        isAddressValid = false;
                         updateTotal();
                         return;
                     }
@@ -346,6 +368,7 @@
                     distanceDisplay.style.display = 'block';
                     deliveryFee.value = fee;
                     deliveryDistance.value = distanceKm;
+                    isAddressValid = true;
                     updateTotal();
                 });
         }
@@ -371,11 +394,14 @@
             totalDisplay.textContent = `S/. ${total.toFixed(2)}`;
         }
 
-        // Cerrar sugerencias al hacer clic fuera
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('#addressSearch') && !e.target.closest('#addressSuggestions')) {
-                suggestions.innerHTML = '';
+        // Validación antes de enviar el formulario
+        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+            if (deliveryRadio.checked && !isAddressValid) {
+                e.preventDefault();
+                alert('Por favor, selecciona una dirección válida de la lista de sugerencias.');
+                return;
             }
+            // El backend validará nuevamente
         });
     });
 </script>
