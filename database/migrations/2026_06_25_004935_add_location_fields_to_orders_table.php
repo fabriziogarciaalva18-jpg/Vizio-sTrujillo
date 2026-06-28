@@ -9,19 +9,29 @@ return new class extends Migration
     public function up()
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->enum('delivery_type', ['pickup', 'delivery'])->default('delivery')->after('payment_method');
-            $table->decimal('shipping_cost', 10, 2)->default(0)->after('delivery_type');
-            $table->decimal('latitude', 10, 8)->nullable()->after('shipping_cost');
-            $table->decimal('longitude', 11, 8)->nullable()->after('latitude');
-            $table->boolean('address_validated')->default(false)->after('longitude');
-            $table->string('district')->nullable()->change(); // Asegurar que sea nullable
+            if (!Schema::hasColumn('orders', 'delivery_type')) {
+                $table->enum('delivery_type', ['pickup', 'delivery'])->default('delivery')->after('order_type');
+            }
+            if (!Schema::hasColumn('orders', 'address_lat')) {
+                $table->decimal('address_lat', 10, 8)->nullable()->after('delivery_address');
+            }
+            if (!Schema::hasColumn('orders', 'address_lng')) {
+                $table->decimal('address_lng', 11, 8)->nullable()->after('address_lat');
+            }
+            if (!Schema::hasColumn('orders', 'delivery_distance')) {
+                $table->decimal('delivery_distance', 10, 2)->nullable()->after('delivery_fee');
+            }
+            if (!Schema::hasColumn('orders', 'delivery_fee')) {
+                // Cambiar a decimal para que sea dinámico
+                $table->decimal('delivery_fee', 10, 2)->default(0)->change();
+            }
         });
     }
 
     public function down()
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn(['delivery_type', 'shipping_cost', 'latitude', 'longitude', 'address_validated']);
+            $table->dropColumn(['delivery_type', 'address_lat', 'address_lng', 'delivery_distance']);
         });
     }
 };
