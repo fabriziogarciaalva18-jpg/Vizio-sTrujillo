@@ -12,6 +12,7 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'order_number',
+        'delivery_reference',
         'order_type',
         'delivery_type',      // ✅ NUEVO: 'pickup' o 'delivery'
         'status',

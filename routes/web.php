@@ -10,27 +10,16 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomizationController;
+use App\Http\Controllers\Delivery\DeliveryController;
 use App\Http\Middleware\CheckUserActive;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\Delivery\DeliveryController;
 
 // =============================================
 // RUTAS PÚBLICAS
 // =============================================
 Route::get('/', [HomeController::class, 'index'])->name('home');
-// =============================================
-// RUTAS DEL REPARTIDOR
-// =============================================
-Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function () {
-    Route::prefix('delivery')->name('delivery.')->group(function () {
-        Route::get('/dashboard', [DeliveryController::class, 'dashboard'])->name('dashboard');
-        Route::get('/orders', [DeliveryController::class, 'orders'])->name('orders');
-        Route::get('/orders/{order}', [DeliveryController::class, 'show'])->name('orders.show');
-        Route::post('/orders/{order}/confirm', [DeliveryController::class, 'confirmDelivery'])->name('orders.confirm');
-        Route::post('/orders/{order}/failed', [DeliveryController::class, 'markAsFailed'])->name('orders.failed');
-    });
-});
+
 // Ruta para servir avatares (pública)
 Route::get('/avatar/{filename}', function ($filename) {
     $path = storage_path('app/public/avatars/' . $filename);
@@ -67,16 +56,13 @@ Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function 
     // =========================================
     // CARRITO
     // =========================================
-    Route::post('/cart/update-item/{key}', [OrderController::class, 'updateCartItem'])->name('cart.update-item');
     Route::get('/cart', [OrderController::class, 'cart'])->name('cart');
     Route::post('/cart/add', [OrderController::class, 'addToCart'])->name('cart.add');
     Route::delete('/cart/remove/{id}', [OrderController::class, 'removeFromCart'])->name('cart.remove');
     Route::post('/cart/update/{id}', [OrderController::class, 'updateCart'])->name('cart.update');
-
-    // 🔥 RUTA PARA ACTUALIZAR ITEM DEL CARRITO DESDE MODAL DE EDICIÓN
     Route::post('/cart/update-item/{key}', [OrderController::class, 'updateCartItem'])->name('cart.update-item');
 
-    // 🔥 RUTA API PARA OBTENER PERSONALIZACIONES DE UN PRODUCTO (para el modal de edición)
+    // 🔥 API para obtener personalizaciones de un producto (para el modal de edición en el carrito)
     Route::get('/api/product/{product}/customizations', [ProductController::class, 'getCustomizationsData'])->name('api.product.customizations');
 
     // =========================================
@@ -86,7 +72,7 @@ Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function 
     Route::post('/checkout/process', [OrderController::class, 'processPayment'])->name('checkout.process');
 
     // =========================================
-    // ÓRDENES
+    // ÓRDENES (usuario)
     // =========================================
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
@@ -100,6 +86,17 @@ Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function 
     Route::post('/payment/confirm', [PaymentController::class, 'confirmOrder'])->name('payment.confirm');
     Route::post('/payment/{order}/mark-paid', [PaymentController::class, 'markAsPaid'])->name('payment.mark-paid');
     Route::delete('/payment/{order}/cancel', [PaymentController::class, 'cancelOrder'])->name('payment.cancel');
+
+    // =========================================
+    // REPARTIDOR
+    // =========================================
+    Route::prefix('delivery')->name('delivery.')->group(function () {
+        Route::get('/dashboard', [DeliveryController::class, 'dashboard'])->name('dashboard');
+        Route::get('/orders', [DeliveryController::class, 'orders'])->name('orders');
+        Route::get('/orders/{order}', [DeliveryController::class, 'show'])->name('orders.show');
+        Route::post('/orders/{order}/confirm', [DeliveryController::class, 'confirmDelivery'])->name('orders.confirm');
+        Route::post('/orders/{order}/failed', [DeliveryController::class, 'markAsFailed'])->name('orders.failed');
+    });
 
     // =========================================
     // ADMIN

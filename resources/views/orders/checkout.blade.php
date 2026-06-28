@@ -116,6 +116,32 @@
                     </div>
 
                     <!-- ========================================= -->
+                    <!-- REFERENCIA DE ENTREGA                     -->
+                    <!-- ========================================= -->
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-pin"></i> Referencia de entrega</label>
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-4">
+                                <button type="button" class="btn-retro-secondary btn-sm w-100 ref-quick" data-ref="Dejar en la puerta principal">
+                                    <i class="bi bi-door-open"></i> Puerta principal
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" class="btn-retro-secondary btn-sm w-100 ref-quick" data-ref="Timbrar al departamento">
+                                    <i class="bi bi-bell"></i> Timbrar
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" class="btn-retro-secondary btn-sm w-100 ref-quick" data-ref="Entregar al conserje">
+                                    <i class="bi bi-person"></i> Conserje
+                                </button>
+                            </div>
+                        </div>
+                        <textarea name="delivery_reference" class="form-control form-control-retro" rows="2" placeholder="Ej: Dejar en la puerta, timbrar al 2B, entregar al conserje..."></textarea>
+                        <small class="text-muted"><i class="bi bi-info-circle"></i> Indicaciones para que el repartidor encuentre fácilmente el lugar.</small>
+                    </div>
+
+                    <!-- ========================================= -->
                     <!-- INSTRUCCIONES ESPECIALES                  -->
                     <!-- ========================================= -->
                     <div class="mb-3">
@@ -200,7 +226,7 @@
                 deliveryFields.style.display = 'none';
                 deliveryFeeDisplay.textContent = 'S/. 0.00';
                 distanceDisplay.style.display = 'none';
-                isAddressValid = true; // Recojo no necesita validación
+                isAddressValid = true;
                 updateTotal();
             }
         });
@@ -251,7 +277,6 @@
                                 addressLng.value = selectedLng;
                                 suggestions.innerHTML = '';
 
-                                // Verificar región en el frontend (también lo hará el backend)
                                 const addressData = item.address || {};
                                 const region = addressData.state || addressData.region || '';
                                 const city = addressData.city || addressData.town || addressData.village || '';
@@ -269,7 +294,6 @@
                                 locationValidation.innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> Ubicación válida en La Libertad.</span>';
                                 isAddressValid = true;
 
-                                // Extraer distrito si está disponible
                                 const district = addressData.suburb || addressData.city_district || addressData.town || '';
                                 if (district) {
                                     districtInput.value = district;
@@ -340,7 +364,6 @@
                     updateTotal();
                 })
                 .catch(() => {
-                    // Fallback Haversine
                     const distanceKm = haversineDistance(storeLat, storeLng, lat, lng);
                     const baseFee = {{ config('delivery.fee.base') }};
                     const perKm = {{ config('delivery.fee.per_km') }};
@@ -373,7 +396,6 @@
                 });
         }
 
-        // Haversine (fallback)
         function haversineDistance(lat1, lng1, lat2, lng2) {
             const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -394,6 +416,24 @@
             totalDisplay.textContent = `S/. ${total.toFixed(2)}`;
         }
 
+        // =============================================
+        // BOTONES DE REFERENCIA RÁPIDA
+        // =============================================
+        document.querySelectorAll('.ref-quick').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const ref = this.dataset.ref;
+                const textarea = document.querySelector('textarea[name="delivery_reference"]');
+                if (textarea) {
+                    if (textarea.value.trim()) {
+                        textarea.value += '\n' + ref;
+                    } else {
+                        textarea.value = ref;
+                    }
+                    textarea.dispatchEvent(new Event('input'));
+                }
+            });
+        });
+
         // Validación antes de enviar el formulario
         document.getElementById('checkoutForm').addEventListener('submit', function(e) {
             if (deliveryRadio.checked && !isAddressValid) {
@@ -401,7 +441,6 @@
                 alert('Por favor, selecciona una dirección válida de la lista de sugerencias.');
                 return;
             }
-            // El backend validará nuevamente
         });
     });
 </script>
