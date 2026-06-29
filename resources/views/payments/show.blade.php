@@ -20,9 +20,9 @@
     @endif
 
     @if(session('error'))
-        <div class="alert alert-retro" style="background: #FEE2E2; color: #991B1B;">
-            {{ session('error') }}
-        </div>
+    <div class="alert alert-retro" style="background: #FEE2E2; color: #991B1B;">
+        {{ session('error') }}
+    </div>
     @endif
 
     <div class="row">
@@ -91,6 +91,7 @@
 
                 <hr>
 
+                <!-- Formulario para subir comprobante (Yape, Plin, Transferencia) -->
                 <form action="{{ route('payment.voucher') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">
