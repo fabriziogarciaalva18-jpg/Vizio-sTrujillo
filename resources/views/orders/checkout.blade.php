@@ -1,7 +1,11 @@
 @extends('layouts.retro')
 
 @section('title', 'Checkout - Vizio\'s')
-
+@if(session('warning'))
+    <div class="alert alert-retro" style="background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A;">
+        <i class="bi bi-exclamation-triangle-fill"></i> {{ session('warning') }}
+    </div>
+@endif
 @section('content')
 <div class="container py-4">
     <div class="text-center mb-4">

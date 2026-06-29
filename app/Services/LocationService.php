@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 
 class LocationService
 {
-    public function geocode($address)
+    public function geocode($address, $strict = true)
     {
         $url = 'https://nominatim.openstreetmap.org/search';
         $response = Http::withHeaders([
@@ -21,7 +21,7 @@ class LocationService
         ]);
 
         if ($response->failed() || $response->json() == null) {
-            Log::error('Nominatim request failed', ['address' => $address, 'response' => $response->body()]);
+            Log::error('Nominatim request failed', ['address' => $address]);
             return null;
         }
 
@@ -33,7 +33,6 @@ class LocationService
 
         $addressDetails = $data['address'] ?? [];
 
-        // Extraer todos los campos que puedan contener la región
         $region = $addressDetails['state'] ??
                   $addressDetails['region'] ??
                   $addressDetails['county'] ??
@@ -48,12 +47,10 @@ class LocationService
 
         $fullAddress = $data['display_name'] ?? '';
 
-        // Normalizar
         $regionLower = strtolower(trim($region));
         $cityLower = strtolower(trim($city));
         $fullLower = strtolower($fullAddress);
 
-        // Lista de palabras clave para La Libertad y Trujillo
         $keywords = ['la libertad', 'libertad', 'trujillo', 'victor larco', 'huanchaco', 'moche', 'salaverry', 'laredo', 'poroto', 'simbal', 'pueblo nuevo'];
 
         $isValid = false;
@@ -72,10 +69,11 @@ class LocationService
             'display_name' => $fullAddress
         ]);
 
-        if (!$isValid) {
+        if ($strict && !$isValid) {
             return [
                 'error' => 'La dirección debe estar en la región La Libertad o en Trujillo.',
-                'valid' => false
+                'valid' => false,
+                'warning' => false
             ];
         }
 
@@ -86,8 +84,10 @@ class LocationService
             'display_name' => $data['display_name'],
             'region' => $region,
             'city' => $city,
+            'warning' => !$isValid ? 'La dirección no se ha podido verificar como parte de La Libertad, pero se aceptará para continuar.' : null
         ];
     }
+
 
     /**
      * Calcular distancia en ruta usando OSRM (Open Source Routing Machine)
