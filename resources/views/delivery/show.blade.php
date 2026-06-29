@@ -5,7 +5,7 @@
 @section('content')
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="section-title" style="font-size: 1.5rem;">← DETALLE DE ENTREGA →</h1>
+        <h1 class="section-title" style="font-size: 1.5rem;"><i class="bi bi-arrow-left"></i> DETALLE DE ENTREGA <i class="bi bi-arrow-right"></i></h1>
         <a href="{{ route('delivery.dashboard') }}" class="btn-retro-secondary btn-sm">
             <i class="bi bi-arrow-left"></i> Volver
         </a>
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            locationStatus.innerHTML = ' Ubicación actualizada: ' +
+                            locationStatus.innerHTML = '<i class="bi bi-check-circle-fill"></i> Ubicación actualizada: ' +
                                 new Date().toLocaleTimeString();
                         }
                     })
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             shareBtn.style.display = 'none';
             stopBtn.style.display = 'block';
-            locationStatus.innerHTML = ' Compartiendo ubicación...';
+            locationStatus.innerHTML = '<i class="bi bi-arrow-repeat"></i> Compartiendo ubicación...';
         });
     }
 
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             shareBtn.style.display = 'block';
             stopBtn.style.display = 'none';
-            locationStatus.innerHTML = ' Compartir detenido.';
+            locationStatus.innerHTML = '<i class="bi bi-stop-circle"></i> Compartir detenido.';
         });
     }
 });
