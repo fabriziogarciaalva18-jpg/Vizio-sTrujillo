@@ -11,10 +11,10 @@ class Delivery extends Model
 
     protected $fillable = [
         'order_id',           // ✅ Agregar
-        'delivery_person_id', // ✅ Agregar
-        'delivered_at',       // ✅ Agregar
-        'delivery_notes',     // ✅ Agregar
-        'status',             // ✅ Agregar
+        'delivery_person_id',
+        'delivered_at',
+        'delivery_notes',
+        'status',
     ];
 
     public function order()
