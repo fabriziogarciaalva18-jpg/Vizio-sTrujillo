@@ -126,13 +126,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const order = @json($order);
     const storeLocation = @json($storeLocation);
 
-    // Inicializar mapa
     const map = L.map('deliveryMap').setView([-8.1120, -79.0288], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Marcador de entrega (si hay coordenadas)
     let deliveryMarker = null;
     if (order.address_lat && order.address_lng) {
         const lat = parseFloat(order.address_lat);
@@ -150,16 +148,13 @@ document.addEventListener('DOMContentLoaded', function() {
         map.setView([lat, lng], 15);
     }
 
-    // Marcador del repartidor
     let personMarker = null;
     if (order.delivery_person_lat && order.delivery_person_lng) {
         const lat = parseFloat(order.delivery_person_lat);
         const lng = parseFloat(order.delivery_person_lng);
-        personMarker = L.marker([lat, lng]).addTo(map)
-            .bindPopup('🚚 Repartidor aquí');
+        personMarker = L.marker([lat, lng]).addTo(map).bindPopup('🚚 Repartidor aquí');
     }
 
-    // Compartir ubicación
     const shareBtn = document.getElementById('shareLocationBtn');
     const stopBtn = document.getElementById('stopSharingBtn');
     const locationStatus = document.getElementById('locationStatus');
@@ -178,8 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const lng = position.coords.longitude;
 
                     if (!personMarker) {
-                        personMarker = L.marker([lat, lng]).addTo(map)
-                            .bindPopup('🚚 Repartidor aquí');
+                        personMarker = L.marker([lat, lng]).addTo(map).bindPopup('🚚 Repartidor aquí');
                     } else {
                         personMarker.setLatLng([lat, lng]);
                     }

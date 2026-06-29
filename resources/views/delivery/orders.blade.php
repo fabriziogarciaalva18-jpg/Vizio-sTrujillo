@@ -1,6 +1,6 @@
 @extends('layouts.retro')
 
-@section('title', 'Entregas del día')
+@section('title', 'Entregas del día - Vizio\'s')
 
 @section('content')
 <div class="container py-4">
@@ -53,7 +53,7 @@
                         <td>{{ $order->phone }}</td>
                         <td>S/. {{ number_format($order->total, 2) }}</td>
                         <td>
-                            <a href="{{ route('delivery.orders.show', $order) }}" class="btn-retro-primary btn-sm">
+                            <a href="{{ route('delivery.show', $order) }}" class="btn-retro-primary btn-sm">
                                 <i class="bi bi-eye"></i> Ver
                             </a>
                         </td>
