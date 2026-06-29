@@ -6,23 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::table('orders', function (Blueprint $table) {
-    $table->timestamp('delivered_at')->nullable()->after('status');
-});
+            // ✅ Verificar si la columna ya existe antes de agregarla
+            if (!Schema::hasColumn('orders', 'delivered_at')) {
+                $table->timestamp('delivered_at')->nullable()->after('status');
+            }
+        });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::table('orders', function (Blueprint $table) {
-            //
+            if (Schema::hasColumn('orders', 'delivered_at')) {
+                $table->dropColumn('delivered_at');
+            }
         });
     }
 };
