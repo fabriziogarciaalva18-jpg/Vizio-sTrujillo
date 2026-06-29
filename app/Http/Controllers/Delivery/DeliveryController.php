@@ -17,13 +17,13 @@ class DeliveryController extends Controller implements HasMiddleware
      * Define los middlewares que se aplicarán a este controlador.
      */
     public static function middleware(): array
-    {
-        return [
-            new Middleware('auth'),
-            new Middleware('verified'),
-            new Middleware('is_delivery'), // ← Debes crear este middleware o usar un closure
-        ];
-    }
+{
+    return [
+        new Middleware('auth'),
+        new Middleware('verified'),
+        new Middleware(\App\Http\Middleware\CheckIsDelivery::class), // ✅ Usar clase directamente
+    ];
+}
 
     /**
      * Dashboard del repartidor: pedidos disponibles, asignados e historial.
