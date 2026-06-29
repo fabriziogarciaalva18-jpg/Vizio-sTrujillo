@@ -19,16 +19,9 @@ use App\Http\Controllers\HomeController;
 // RUTAS PÚBLICAS
 // =============================================
 
-Route::middleware(['auth', 'verified'])->prefix('delivery')->name('delivery.')->group(function () {
-    Route::get('/dashboard', [DeliveryController::class, 'dashboard'])->name('dashboard');
-    Route::get('/orders', [DeliveryController::class, 'orders'])->name('orders');
-    Route::post('/take/{order}', [DeliveryController::class, 'takeOrder'])->name('take');
-    Route::get('/orders/{order}', [DeliveryController::class, 'show'])->name('show');
-    Route::post('/orders/{order}/confirm', [DeliveryController::class, 'confirmDelivery'])->name('confirm');
-    Route::post('/orders/{order}/failed', [DeliveryController::class, 'markAsFailed'])->name('failed');
-    Route::post('/orders/{order}/update-location', [DeliveryController::class, 'updateLocation'])->name('update-location');
-    Route::get('/orders/{order}/location', [DeliveryController::class, 'getLocation'])->name('location');
-});
+// 🔥 RUTA HOME (la que faltaba)
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
 // Ruta para servir avatares (pública)
 Route::get('/avatar/{filename}', function ($filename) {
     $path = storage_path('app/public/avatars/' . $filename);
@@ -97,14 +90,17 @@ Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function 
     Route::delete('/payment/{order}/cancel', [PaymentController::class, 'cancelOrder'])->name('payment.cancel');
 
     // =========================================
-    // REPARTIDOR
+    // REPARTIDOR (UNIFICADO)
     // =========================================
     Route::prefix('delivery')->name('delivery.')->group(function () {
         Route::get('/dashboard', [DeliveryController::class, 'dashboard'])->name('dashboard');
         Route::get('/orders', [DeliveryController::class, 'orders'])->name('orders');
-        Route::get('/orders/{order}', [DeliveryController::class, 'show'])->name('orders.show');
-        Route::post('/orders/{order}/confirm', [DeliveryController::class, 'confirmDelivery'])->name('orders.confirm');
-        Route::post('/orders/{order}/failed', [DeliveryController::class, 'markAsFailed'])->name('orders.failed');
+        Route::post('/take/{order}', [DeliveryController::class, 'takeOrder'])->name('take');
+        Route::get('/orders/{order}', [DeliveryController::class, 'show'])->name('show');
+        Route::post('/orders/{order}/confirm', [DeliveryController::class, 'confirmDelivery'])->name('confirm');
+        Route::post('/orders/{order}/failed', [DeliveryController::class, 'markAsFailed'])->name('failed');
+        Route::post('/orders/{order}/update-location', [DeliveryController::class, 'updateLocation'])->name('update-location');
+        Route::get('/orders/{order}/location', [DeliveryController::class, 'getLocation'])->name('location');
     });
 
     // =========================================
@@ -147,19 +143,7 @@ Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function 
         Route::get('/payments', [AdminController::class, 'payments'])->name('payments');
     });
 });
-// =============================================
-// RUTAS DEL REPARTIDOR
-// =============================================
-// Rutas del repartidor
-Route::middleware(['auth', 'verified', CheckUserActive::class])->prefix('delivery')->name('delivery.')->group(function () {
-    Route::get('/dashboard', [App\Http\Controllers\Delivery\DeliveryController::class, 'dashboard'])->name('dashboard');
-    Route::post('/take/{order}', [App\Http\Controllers\Delivery\DeliveryController::class, 'takeOrder'])->name('take');
-    Route::get('/orders/{order}', [App\Http\Controllers\Delivery\DeliveryController::class, 'show'])->name('show');
-    Route::post('/orders/{order}/update-location', [App\Http\Controllers\Delivery\DeliveryController::class, 'updateLocation'])->name('update-location');
-    Route::get('/orders/{order}/location', [App\Http\Controllers\Delivery\DeliveryController::class, 'getLocation'])->name('location');
-    Route::post('/orders/{order}/confirm', [App\Http\Controllers\Delivery\DeliveryController::class, 'confirmDelivery'])->name('confirm');
-    Route::post('/orders/{order}/failed', [App\Http\Controllers\Delivery\DeliveryController::class, 'markAsFailed'])->name('failed');
-});
+
 // =============================================
 // RUTAS DE AUTENTICACIÓN (BREEZE)
 // =============================================
