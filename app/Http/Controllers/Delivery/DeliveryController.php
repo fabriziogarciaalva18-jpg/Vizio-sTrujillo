@@ -3,29 +3,28 @@
 namespace App\Http\Controllers\Delivery;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\CheckIsDelivery; // 👈 Importa el middleware directamente
 use App\Models\Order;
 use App\Models\Delivery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class DeliveryController extends Controller
+class DeliveryController extends Controller implements HasMiddleware
 {
     /**
-     * Constructor: verifica autenticación, verificación de email y rol de repartidor.
+     * Define los middlewares que se aplicarán a este controlador.
+     * ✅ Usamos la clase directamente, SIN alias.
      */
-    public function __construct()
+    public static function middleware(): array
     {
-        // Middlewares de autenticación y verificación de email
-        $this->middleware(['auth', 'verified']);
-
-        // Verificación de rol de repartidor (sin alias, usando closure)
-        $this->middleware(function ($request, $next) {
-            if (!auth()->check() || !auth()->user()->is_delivery) {
-                abort(403, 'Acceso solo para repartidores.');
-            }
-            return $next($request);
-        });
+        return [
+            new Middleware('auth'),
+            new Middleware('verified'),
+            new Middleware(CheckIsDelivery::class), // 👈 Directo, sin strings
+        ];
     }
 
     /**
