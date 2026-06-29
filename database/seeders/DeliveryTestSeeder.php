@@ -13,18 +13,20 @@ class DeliveryTestSeeder extends Seeder
 {
     public function run()
     {
+        // Buscar un cliente
         $user = User::where('is_admin', false)->where('is_delivery', false)->first();
         if (!$user) {
             $user = User::first();
         }
 
+        // Buscar un producto
         $product = Product::first();
         if (!$product) {
             $this->command->error('No hay productos. Crea uno primero.');
             return;
         }
 
-        // 3 pedidos con fecha de hoy
+        // Crear 3 pedidos de prueba
         for ($i = 0; $i < 3; $i++) {
             $order = Order::create([
                 'user_id' => $user->id,
@@ -33,7 +35,7 @@ class DeliveryTestSeeder extends Seeder
                 'delivery_type' => 'delivery',
                 'status' => 'preparing',
                 'delivery_date' => Carbon::today(),
-                'delivery_address' => "Calle de prueba {$i+1} 123, Trujillo",
+                'delivery_address' => 'Calle de prueba ' . ($i + 1) . ' 123, Trujillo',
                 'district' => 'Víctor Larco',
                 'phone' => '987654321',
                 'subtotal' => 100.00 + ($i * 20),
@@ -52,7 +54,7 @@ class DeliveryTestSeeder extends Seeder
                 'subtotal' => 100.00 + ($i * 20),
             ]);
 
-            $this->command->info("✅ Pedido #{$order->order_number} creado");
+            $this->command->info("✅ Pedido #{$order->order_number} creado con estado: preparing");
         }
     }
 }
