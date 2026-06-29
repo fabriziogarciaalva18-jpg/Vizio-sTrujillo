@@ -44,8 +44,7 @@ class Kernel extends HttpKernel
      * @var array<string, class-string|string>
      */
     protected $middlewareAliases = [
-        'is_delivery' => \App\Http\Middleware\CheckIsDelivery::class,
-        'active' => \App\Http\Middleware\CheckUserActive::class,
+'is_delivery' => \App\Http\Middleware\CheckIsDelivery::class,        'active' => \App\Http\Middleware\CheckUserActive::class,
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
