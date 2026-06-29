@@ -164,23 +164,23 @@ class OrderController extends Controller
     {
         // Validaciones básicas
         $request->validate([
-            'delivery_address' => 'required_if:delivery_type,delivery|string|max:255',
-            'district' => 'nullable|string|max:255',
-            'phone' => ['required', 'string', function ($attribute, $value, $fail) {
-                if (!preg_match('/^9\d{8}$/', $value)) {
-                    $fail('El teléfono debe tener 9 dígitos y comenzar con 9 (ej: 987654321).');
-                }
-            }],
-            'delivery_date' => 'required|date|after:today',
-            'payment_method' => 'required|in:yape,plin,transferencia,contraentrega',
-            'special_instructions' => 'nullable|string',
-            'delivery_type' => 'required|in:pickup,delivery',
-            'address_lat' => 'required_if:delivery_type,delivery|numeric|between:-20,-5',
-            'address_lng' => 'required_if:delivery_type,delivery|numeric|between:-85,-70',
-            'delivery_distance' => 'nullable|numeric|min:0',
-            'delivery_fee' => 'nullable|numeric|min:0',
-            'delivery_reference' => 'nullable|string|max:500',
-        ]);
+    'delivery_type' => 'required|in:pickup,delivery',
+    'phone' => ['required', 'string', function ($attribute, $value, $fail) {
+        if (!preg_match('/^9\d{8}$/', $value)) {
+            $fail('El teléfono debe tener 9 dígitos y comenzar con 9 (ej: 987654321).');
+        }
+    }],
+    'delivery_date' => 'required|date|after:today',
+    'payment_method' => 'required|in:yape,plin,transferencia,contraentrega',
+    'special_instructions' => 'nullable|string',
+    'delivery_reference' => 'nullable|string|max:500',
+    // Campos de ubicación ahora son opcionales
+    'delivery_address' => 'nullable|string|max:255',
+    'address_lat' => 'nullable|numeric|between:-20,-5',
+    'address_lng' => 'nullable|numeric|between:-85,-70',
+    'delivery_distance' => 'nullable|numeric|min:0',
+    'delivery_fee' => 'nullable|numeric|min:0',
+]);
 
         $cart = session()->get('cart', []);
         if (empty($cart)) {
@@ -226,10 +226,11 @@ class OrderController extends Controller
     $deliveryFee = $feeResult['fee'];
 
     $request->merge([
-        'address_lat' => $lat,
-        'address_lng' => $lng,
-        'delivery_distance' => $deliveryDistance,
-        'delivery_fee' => $deliveryFee,
+        'delivery_address' => 'Recojo en tienda - Los Cedros 154, Víctor Larco Herrera',
+        'address_lat' => null,
+        'address_lng' => null,
+        'delivery_distance' => null,
+        'delivery_fee' => 0,
     ]);
 } else {
             // Recojo en tienda: dirección fija y sin costo de envío

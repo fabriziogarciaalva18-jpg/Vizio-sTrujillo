@@ -221,7 +221,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedLng = null;
     let isAddressValid = false;
 
-    // Actualizar referencia en tiempo real
+    // Inicializar: deshabilitar campos de delivery (por defecto pickup)
+    deliveryFields.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
+
+    // Referencia en tiempo real
     const refTextarea = document.querySelector('textarea[name="delivery_reference"]');
     if (refTextarea) {
         refTextarea.addEventListener('input', function() {
@@ -235,9 +238,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Toggle pickup
     pickupRadio.addEventListener('change', function() {
         if (this.checked) {
             deliveryFields.style.display = 'none';
+            deliveryFields.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
             deliveryFeeDisplay.textContent = 'S/. 0.00';
             distanceDisplay.style.display = 'none';
             isAddressValid = true;
@@ -245,9 +250,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Toggle delivery
     deliveryRadio.addEventListener('change', function() {
         if (this.checked) {
             deliveryFields.style.display = 'block';
+            deliveryFields.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false);
             isAddressValid = false;
             if (selectedLat && selectedLng) {
                 calculateDelivery(selectedLat, selectedLng);
