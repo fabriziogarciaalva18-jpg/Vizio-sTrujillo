@@ -11,6 +11,7 @@ use App\Models\ProductConfiguration;
 use App\Models\Addon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -195,15 +196,22 @@ class OrderController extends Controller
         if ($deliveryType === 'delivery') {
             // RE-VALIDAR EN EL SERVIDOR (evita manipulación del frontend)
             $locationService = new LocationService();
+            
+            // Log para depuración
+            Log::info('Geocode request:', ['address' => $request->delivery_address]);
+            
             $geo = $locationService->geocode($request->delivery_address);
 
             if (!$geo || !$geo['valid']) {
-                return back()->with('error', $geo['error'] ?? 'Dirección inválida. Asegúrate de que esté en La Libertad.');
+                Log::warning('Geocode failed:', ['geo' => $geo]);
+                return back()->with('error', $geo['error'] ?? 'Dirección inválida. Asegúrate de que esté en La Libertad.')->withInput();
             }
 
             // Usar las coordenadas reales (no las que vengan del frontend)
             $lat = $geo['lat'];
             $lng = $geo['lng'];
+
+            Log::info('Geocode success:', ['lat' => $lat, 'lng' => $lng, 'display_name' => $geo['display_name']]);
 
             // Calcular distancia usando las coordenadas reales
             $storeLat = config('delivery.store.lat');

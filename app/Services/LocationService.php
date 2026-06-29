@@ -7,10 +7,6 @@ use Illuminate\Support\Facades\Log;
 
 class LocationService
 {
-    /**
-     * Buscar dirección y obtener coordenadas usando Nominatim (OpenStreetMap)
-     * Validación mejorada para La Libertad
-     */
     public function geocode($address)
     {
         $url = 'https://nominatim.openstreetmap.org/search';
@@ -25,11 +21,15 @@ class LocationService
         ]);
 
         if ($response->failed() || $response->json() == null) {
+            Log::error('Nominatim request failed', ['address' => $address, 'response' => $response->body()]);
             return null;
         }
 
         $data = $response->json()[0] ?? null;
-        if (!$data) return null;
+        if (!$data) {
+            Log::warning('No data from Nominatim', ['address' => $address]);
+            return null;
+        }
 
         $addressDetails = $data['address'] ?? [];
 
@@ -38,7 +38,6 @@ class LocationService
                   $addressDetails['region'] ??
                   $addressDetails['county'] ??
                   $addressDetails['province'] ??
-                  $addressDetails['city'] ??
                   '';
 
         $city = $addressDetails['city'] ??
@@ -47,25 +46,30 @@ class LocationService
                 $addressDetails['municipality'] ??
                 '';
 
-        // Normalizar y verificar
+        $fullAddress = $data['display_name'] ?? '';
+
+        // Normalizar
         $regionLower = strtolower(trim($region));
         $cityLower = strtolower(trim($city));
-        $fullAddress = strtolower($data['display_name'] ?? '');
+        $fullLower = strtolower($fullAddress);
 
-        // Verificar si está en La Libertad o Trujillo (más flexible)
-        $isValid = str_contains($regionLower, 'la libertad') ||
-                   str_contains($regionLower, 'libertad') ||
-                   str_contains($cityLower, 'trujillo') ||
-                   str_contains($fullAddress, 'la libertad') ||
-                   str_contains($fullAddress, 'trujillo');
+        // Lista de palabras clave para La Libertad y Trujillo
+        $keywords = ['la libertad', 'libertad', 'trujillo', 'victor larco', 'huanchaco', 'moche', 'salaverry', 'laredo', 'poroto', 'simbal', 'pueblo nuevo'];
 
-        // Log para depuración (opcional)
+        $isValid = false;
+        foreach ($keywords as $keyword) {
+            if (str_contains($fullLower, $keyword) || str_contains($regionLower, $keyword) || str_contains($cityLower, $keyword)) {
+                $isValid = true;
+                break;
+            }
+        }
+
         Log::info('Geocode result', [
             'address' => $address,
             'region' => $region,
             'city' => $city,
             'isValid' => $isValid,
-            'display_name' => $data['display_name']
+            'display_name' => $fullAddress
         ]);
 
         if (!$isValid) {
@@ -95,7 +99,6 @@ class LocationService
         $response = Http::get($url);
 
         if ($response->failed()) {
-            // Fallback a distancia en línea recta (Haversine)
             return $this->haversineDistance($originLat, $originLng, $destLat, $destLng);
         }
 
@@ -104,7 +107,6 @@ class LocationService
             return $this->haversineDistance($originLat, $originLng, $destLat, $destLng);
         }
 
-        // Distancia en metros, convertir a kilómetros
         $distanceInMeters = $data['routes'][0]['distance'] ?? 0;
         return round($distanceInMeters / 1000, 2);
     }
@@ -114,7 +116,7 @@ class LocationService
      */
     private function haversineDistance($lat1, $lng1, $lat2, $lng2)
     {
-        $earthRadius = 6371; // km
+        $earthRadius = 6371;
 
         $dLat = deg2rad($lat2 - $lat1);
         $dLng = deg2rad($lng2 - $lng1);
