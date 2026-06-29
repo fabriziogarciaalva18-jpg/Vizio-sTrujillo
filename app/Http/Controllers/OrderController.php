@@ -241,6 +241,9 @@ class OrderController extends Controller
                 'delivery_fee' => 0,
             ]);
         }
+        if ($request->payment_method === 'contraentrega' && $request->delivery_type === 'pickup') {
+    return back()->with('error', 'El método de pago "Contra entrega" no está disponible para recojo en tienda.')->withInput();
+}
 
         // Guardar datos en sesión (con valores reales)
         session()->put('checkout_data', [

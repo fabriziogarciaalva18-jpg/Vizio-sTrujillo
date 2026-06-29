@@ -1,12 +1,17 @@
 @extends('layouts.retro')
 
 @section('title', 'Checkout - Vizio\'s')
-@if(session('warning'))
-    <div class="alert alert-retro" style="background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A;">
-        <i class="bi bi-exclamation-triangle-fill"></i> {{ session('warning') }}
+
+@section('content')
+@if ($errors->any())
+    <div class="alert alert-retro" style="background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5;">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li><i class="bi bi-exclamation-triangle-fill"></i> {{ $error }}</li>
+            @endforeach
+        </ul>
     </div>
 @endif
-@section('content')
 <div class="container py-4">
     <div class="text-center mb-4">
         <h1 class="section-title" style="font-size: 1.8rem;">← FINALIZAR PEDIDO →</h1>
