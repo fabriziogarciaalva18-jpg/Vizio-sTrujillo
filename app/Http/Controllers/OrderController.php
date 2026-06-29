@@ -164,23 +164,23 @@ class OrderController extends Controller
     {
         // Validaciones básicas
         $request->validate([
-    'delivery_type' => 'required|in:pickup,delivery',
-    'phone' => ['required', 'string', function ($attribute, $value, $fail) {
-        if (!preg_match('/^9\d{8}$/', $value)) {
-            $fail('El teléfono debe tener 9 dígitos y comenzar con 9 (ej: 987654321).');
-        }
-    }],
-    'delivery_date' => 'required|date|after:today',
-    'payment_method' => 'required|in:yape,plin,transferencia,contraentrega',
-    'special_instructions' => 'nullable|string',
-    'delivery_reference' => 'nullable|string|max:500',
-    // Campos de ubicación ahora son opcionales
-    'delivery_address' => 'nullable|string|max:255',
-    'address_lat' => 'nullable|numeric|between:-20,-5',
-    'address_lng' => 'nullable|numeric|between:-85,-70',
-    'delivery_distance' => 'nullable|numeric|min:0',
-    'delivery_fee' => 'nullable|numeric|min:0',
-]);
+            'delivery_type' => 'required|in:pickup,delivery',
+            'phone' => ['required', 'string', function ($attribute, $value, $fail) {
+                if (!preg_match('/^9\d{8}$/', $value)) {
+                    $fail('El teléfono debe tener 9 dígitos y comenzar con 9 (ej: 987654321).');
+                }
+            }],
+            'delivery_date' => 'required|date|after:today',
+            'payment_method' => 'required|in:yape,plin,transferencia,contraentrega',
+            'special_instructions' => 'nullable|string',
+            'delivery_reference' => 'nullable|string|max:500',
+            // Campos de ubicación ahora son opcionales
+            'delivery_address' => 'nullable|string|max:255',
+            'address_lat' => 'nullable|numeric|between:-20,-5',
+            'address_lng' => 'nullable|numeric|between:-85,-70',
+            'delivery_distance' => 'nullable|numeric|min:0',
+            'delivery_fee' => 'nullable|numeric|min:0',
+        ]);
 
         $cart = session()->get('cart', []);
         if (empty($cart)) {
@@ -194,44 +194,44 @@ class OrderController extends Controller
         $lng = null;
 
         if ($deliveryType === 'delivery') {
-    $locationService = new LocationService();
-    $geo = $locationService->geocode($request->delivery_address);
+            // ✅ Validar dirección y obtener coordenadas
+            $locationService = new LocationService();
+            $geo = $locationService->geocode($request->delivery_address);
 
-    // ✅ Ahora $geo siempre tiene 'valid' => true (por el fallback)
-    if (!$geo) {
-        return back()->with('error', 'No se pudo verificar la dirección.')->withInput();
-    }
+            if (!$geo) {
+                return back()->with('error', 'No se pudo verificar la dirección. Intenta nuevamente.')->withInput();
+            }
 
-    // Si hay advertencia, mostrarla
-    if (!empty($geo['warning'])) {
-        session()->flash('warning', $geo['warning']);
-    }
+            if (!empty($geo['warning'])) {
+                session()->flash('warning', $geo['warning']);
+            }
 
-    $lat = $geo['lat'];
-    $lng = $geo['lng'];
+            $lat = $geo['lat'];
+            $lng = $geo['lng'];
 
-    // Calcular distancia y tarifa
-    $storeLat = config('delivery.store.lat');
-    $storeLng = config('delivery.store.lng');
-    $distance = $locationService->calculateDistance($storeLat, $storeLng, $lat, $lng);
-    $deliveryDistance = $distance;
+            // Calcular distancia y tarifa
+            $storeLat = config('delivery.store.lat');
+            $storeLng = config('delivery.store.lng');
+            $distance = $locationService->calculateDistance($storeLat, $storeLng, $lat, $lng);
+            $deliveryDistance = $distance;
 
-    $feeService = new DeliveryFeeService();
-    $feeResult = $feeService->calculate($distance);
+            $feeService = new DeliveryFeeService();
+            $feeResult = $feeService->calculate($distance);
 
-    if (!$feeResult['valid']) {
-        return back()->with('error', $feeResult['error']);
-    }
+            if (!$feeResult['valid']) {
+                return back()->with('error', $feeResult['error']);
+            }
 
-    $deliveryFee = $feeResult['fee'];
+            $deliveryFee = $feeResult['fee'];
 
-    $request->merge([
-        'address_lat' => null,
-        'address_lng' => null,
-        'delivery_distance' => null,
-        'delivery_fee' => 0,
-    ]);
-} else {
+            // ✅ Asignar valores reales (NO null)
+            $request->merge([
+                'address_lat' => $lat,
+                'address_lng' => $lng,
+                'delivery_distance' => $deliveryDistance,
+                'delivery_fee' => $deliveryFee,
+            ]);
+        } else {
             // Recojo en tienda: dirección fija y sin costo de envío
             $request->merge([
                 'delivery_address' => 'Recojo en tienda - Los Cedros 154, Víctor Larco Herrera',
@@ -241,11 +241,8 @@ class OrderController extends Controller
                 'delivery_fee' => 0,
             ]);
         }
-        if ($request->payment_method === 'contraentrega' && $request->delivery_type === 'pickup') {
-        return redirect()->route('payment.method', ['method' => $request->payment_method]);
-}
 
-        // Guardar datos en sesión (con valores reales)
+        // Guardar datos en sesión
         session()->put('checkout_data', [
             'delivery_address' => $request->delivery_address,
             'district' => $request->district,
