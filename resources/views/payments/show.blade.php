@@ -1,8 +1,6 @@
 @extends('layouts.retro')
 
 @section('title', 'Realizar Pago - Vizio\'s')
->
-@endif
 @section('content')
 <div class="container py-4">
     <div class="text-center mb-4">
