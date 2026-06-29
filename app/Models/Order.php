@@ -51,7 +51,39 @@ class Order extends Model
         'delivery_distance' => 'decimal:2',
         'paid_at' => 'datetime',
     ];
+public function deliveryPerson()
+{
+    return $this->belongsTo(User::class, 'delivery_person_id');
+}
 
+// Verificar si el pedido tiene un repartidor asignado y está en camino
+public function isDelivering()
+{
+    return $this->status === 'delivering' && $this->delivery_person_id;
+}
+
+// Obtener la ubicación actual del repartidor (si existe)
+public function getDeliveryPersonLocationAttribute()
+{
+    if ($this->delivery_person_lat && $this->delivery_person_lng) {
+        return [
+            'lat' => $this->delivery_person_lat,
+            'lng' => $this->delivery_person_lng,
+            'updated_at' => $this->last_location_update,
+        ];
+    }
+    return null;
+}
+
+// Actualizar ubicación del repartidor
+public function updateDeliveryPersonLocation($lat, $lng)
+{
+    $this->update([
+        'delivery_person_lat' => $lat,
+        'delivery_person_lng' => $lng,
+        'last_location_update' => now(),
+    ]);
+}
     // Relaciones
     public function user()
     {

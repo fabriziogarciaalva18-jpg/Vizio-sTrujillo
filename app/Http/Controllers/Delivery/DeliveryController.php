@@ -41,7 +41,7 @@ class DeliveryController extends Controller
     }
 
     /**
-     * Lista de entregas del día
+     * Lista de entregas del día (con paginación)
      */
     public function orders()
     {
@@ -152,6 +152,72 @@ class DeliveryController extends Controller
             ->with('error', 'Entrega marcada como fallida. El pedido volverá a la cola.');
     }
 
+    // =============================================
+    // NUEVOS MÉTODOS PARA UBICACIÓN EN TIEMPO REAL
+    // =============================================
+
+    /**
+     * Actualizar ubicación del repartidor (vía AJAX)
+     */
+    public function updateLocation(Request $request, Order $order)
+    {
+        // Verificar que el repartidor tenga asignado este pedido
+        // Si no hay asignación, permitir que cualquier repartidor actualice (según tu lógica)
+        // Aquí asumimos que el repartidor está autenticado y puede actualizar cualquier pedido en 'preparing'
+        // Podrías también verificar que el pedido esté en estado 'preparing'
+        if ($order->status !== 'preparing') {
+            return response()->json(['error' => 'El pedido no está en estado de preparación'], 422);
+        }
+
+        $request->validate([
+            'lat' => 'required|numeric|between:-20,-5',
+            'lng' => 'required|numeric|between:-85,-70',
+        ]);
+
+        // Actualizar en la tabla orders (columnas delivery_person_lat, delivery_person_lng, last_location_update)
+        // Si no existen, asegúrate de haber creado la migración.
+        $order->delivery_person_lat = $request->lat;
+        $order->delivery_person_lng = $request->lng;
+        $order->last_location_update = now();
+        $order->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ubicación actualizada',
+            'location' => [
+                'lat' => $request->lat,
+                'lng' => $request->lng,
+                'updated_at' => now()->toIso8601String(),
+            ]
+        ]);
+    }
+
+    /**
+     * Obtener la ubicación actual del repartidor (para el cliente)
+     */
+    public function getLocation(Order $order)
+    {
+        // Permitir que cualquier usuario autenticado vea la ubicación si el pedido está en 'preparing' o 'delivering'
+        // O solo si es el cliente dueño del pedido (puedes añadir esa verificación)
+        if ($order->status !== 'preparing' && $order->status !== 'delivering') {
+            return response()->json(['error' => 'El pedido no está en camino'], 404);
+        }
+
+        return response()->json([
+            'order_id' => $order->id,
+            'order_number' => $order->order_number,
+            'location' => [
+                'lat' => $order->delivery_person_lat,
+                'lng' => $order->delivery_person_lng,
+                'updated_at' => $order->last_location_update ? $order->last_location_update->toIso8601String() : null,
+            ]
+        ]);
+    }
+
+    // =============================================
+    // MÉTODOS AUXILIARES
+    // =============================================
+
     /**
      * Calcular distancia total de todas las entregas
      */
@@ -175,6 +241,9 @@ class DeliveryController extends Controller
         return round($total, 2);
     }
 
+    /**
+     * Distancia en línea recta (Haversine)
+     */
     private function haversineDistance($lat1, $lon1, $lat2, $lon2)
     {
         $earthRadius = 6371;

@@ -138,7 +138,19 @@ Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function 
         Route::get('/payments', [AdminController::class, 'payments'])->name('payments');
     });
 });
-
+// =============================================
+// RUTAS DEL REPARTIDOR
+// =============================================
+Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function () {
+    Route::prefix('delivery')->name('delivery.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Delivery\DeliveryController::class, 'dashboard'])->name('dashboard');
+        Route::get('/orders', [App\Http\Controllers\Delivery\DeliveryController::class, 'orders'])->name('orders');
+        Route::get('/orders/{order}', [App\Http\Controllers\Delivery\DeliveryController::class, 'show'])->name('orders.show');
+        Route::post('/orders/{order}/update-location', [App\Http\Controllers\Delivery\DeliveryController::class, 'updateLocation'])->name('orders.update-location');
+        Route::post('/orders/{order}/confirm', [App\Http\Controllers\Delivery\DeliveryController::class, 'confirmDelivery'])->name('orders.confirm');
+        Route::post('/orders/{order}/failed', [App\Http\Controllers\Delivery\DeliveryController::class, 'markAsFailed'])->name('orders.failed');
+    });
+});
 // =============================================
 // RUTAS DE AUTENTICACIÓN (BREEZE)
 // =============================================
