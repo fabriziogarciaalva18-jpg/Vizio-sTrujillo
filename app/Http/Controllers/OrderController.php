@@ -226,7 +226,6 @@ class OrderController extends Controller
     $deliveryFee = $feeResult['fee'];
 
     $request->merge([
-        'delivery_address' => 'Recojo en tienda - Los Cedros 154, Víctor Larco Herrera',
         'address_lat' => null,
         'address_lng' => null,
         'delivery_distance' => null,
@@ -243,7 +242,7 @@ class OrderController extends Controller
             ]);
         }
         if ($request->payment_method === 'contraentrega' && $request->delivery_type === 'pickup') {
-    return back()->with('error', 'El método de pago "Contra entrega" no está disponible para recojo en tienda.')->withInput();
+        return redirect()->route('payment.method', ['method' => $request->payment_method]);
 }
 
         // Guardar datos en sesión (con valores reales)
