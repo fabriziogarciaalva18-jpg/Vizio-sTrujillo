@@ -116,6 +116,9 @@ class PaymentController extends Controller
     /**
      * Mostrar página de pago
      */
+/**
+ * Mostrar página de pago (o procesar contraentrega directamente)
+ */
 public function showPayment($method)
 {
     $cart = session()->get('cart', []);
@@ -125,6 +128,16 @@ public function showPayment($method)
         return redirect()->route('cart')->with('error', 'No hay datos del pedido');
     }
 
+    // ✅ Contraentrega: crear pedido inmediatamente y redirigir
+    if ($method == 'contraentrega') {
+        $order = $this->createOrder($cart, $checkoutData, 'pending_delivery');
+        session()->forget('cart');
+        session()->forget('checkout_data');
+        return redirect()->route('orders.show', $order)
+            ->with('success', '¡Pedido confirmado! Pagarás al momento de la entrega.');
+    }
+
+    // ✅ Otros métodos: mostrar vista de pago con instrucciones
     $subtotal = 0;
     foreach ($cart as $item) {
         $subtotal += ($item['unit_price'] ?? $item['price'] ?? 0) * $item['quantity'];
