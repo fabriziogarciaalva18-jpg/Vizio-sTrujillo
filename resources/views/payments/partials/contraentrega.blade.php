@@ -6,6 +6,6 @@
     </div>
     <p>Pagarás en efectivo al momento de recibir tu pedido.</p>
     <div class="alert alert-retro mt-3">
-        <strong>Monto a pagar:</strong> S/. {{ number_format($order->total / 100, 2) }}
+        <strong>Monto a pagar:</strong> S/. {{ number_format($order->total , 2) }}
     </div>
 </div>
