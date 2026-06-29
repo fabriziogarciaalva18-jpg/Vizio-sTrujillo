@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 popupAnchor: [1, -34],
                 shadowSize: [41, 41]
             })
-        }).addTo(map).bindPopup('📍 Punto de entrega').openPopup();
+        }).addTo(map).bindPopup('<i class="bi bi-geo-alt-fill"></i> Punto de entrega').openPopup();
         map.setView([lat, lng], 15);
     }
 
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (order.delivery_person_lat && order.delivery_person_lng) {
         const lat = parseFloat(order.delivery_person_lat);
         const lng = parseFloat(order.delivery_person_lng);
-        personMarker = L.marker([lat, lng]).addTo(map).bindPopup('🚚 Repartidor aquí');
+        personMarker = L.marker([lat, lng]).addTo(map).bindPopup('<i class="bi bi-truck"></i> Repartidor aquí');
     }
 
     const shareBtn = document.getElementById('shareLocationBtn');
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const lng = position.coords.longitude;
 
                     if (!personMarker) {
-                        personMarker = L.marker([lat, lng]).addTo(map).bindPopup('🚚 Repartidor aquí');
+                        personMarker = L.marker([lat, lng]).addTo(map).bindPopup('<i class="bi bi-truck"></i> Repartidor aquí');
                     } else {
                         personMarker.setLatLng([lat, lng]);
                     }
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            locationStatus.innerHTML = '✅ Ubicación actualizada: ' +
+                            locationStatus.innerHTML = '<i class="bi bi-check-circle-fill"></i> Ubicación actualizada: ' +
                                 new Date().toLocaleTimeString();
                         }
                     })
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             shareBtn.style.display = 'none';
             stopBtn.style.display = 'block';
-            locationStatus.innerHTML = '🔄 Compartiendo ubicación...';
+            locationStatus.innerHTML = '<i class="bi bi-arrow-repeat"></i> Compartiendo ubicación...';
         });
     }
 
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             shareBtn.style.display = 'block';
             stopBtn.style.display = 'none';
-            locationStatus.innerHTML = '⏹️ Compartir detenido.';
+            locationStatus.innerHTML = '<i class="bi bi-stop-circle-fill"></i> Compartir detenido.';
         });
     }
 });

@@ -26,8 +26,33 @@ class DeliveryTestSeeder extends Seeder
             return;
         }
 
-        // Crear 3 pedidos de prueba
-        for ($i = 0; $i < 3; $i++) {
+        // Ubicaciones reales en Trujillo (La Libertad)
+        $locations = [
+            [
+                'address' => 'Av. La Marina 123, Trujillo',
+                'district' => 'Trujillo',
+                'lat' => -8.1120,
+                'lng' => -79.0288,
+                'reference' => 'Cerca al parque',
+            ],
+            [
+                'address' => 'Jr. Pizarro 456, Trujillo',
+                'district' => 'Trujillo',
+                'lat' => -8.1105,
+                'lng' => -79.0260,
+                'reference' => 'A espaldas de la catedral',
+            ],
+            [
+                'address' => 'Calle Los Cedros 154, Víctor Larco Herrera',
+                'district' => 'Víctor Larco',
+                'lat' => -8.1191,
+                'lng' => -79.0330,
+                'reference' => 'Tienda Vizio\'s',
+            ],
+        ];
+
+        // Crear 3 pedidos con diferentes ubicaciones
+        foreach ($locations as $i => $loc) {
             $order = Order::create([
                 'user_id' => $user->id,
                 'order_number' => 'TEST-' . strtoupper(uniqid()),
@@ -35,8 +60,11 @@ class DeliveryTestSeeder extends Seeder
                 'delivery_type' => 'delivery',
                 'status' => 'preparing',
                 'delivery_date' => Carbon::today(),
-                'delivery_address' => 'Calle de prueba ' . ($i + 1) . ' 123, Trujillo',
-                'district' => 'Víctor Larco',
+                'delivery_address' => $loc['address'],
+                'district' => $loc['district'],
+                'address_lat' => $loc['lat'],
+                'address_lng' => $loc['lng'],
+                'delivery_reference' => $loc['reference'],
                 'phone' => '987654321',
                 'subtotal' => 100.00 + ($i * 20),
                 'delivery_fee' => 8.00,
@@ -54,7 +82,7 @@ class DeliveryTestSeeder extends Seeder
                 'subtotal' => 100.00 + ($i * 20),
             ]);
 
-            $this->command->info("✅ Pedido #{$order->order_number} creado con estado: preparing");
+            $this->command->info("✅ Pedido #{$order->order_number} creado en: {$loc['district']}");
         }
     }
 }
