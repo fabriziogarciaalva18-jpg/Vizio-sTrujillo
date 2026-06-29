@@ -12,6 +12,7 @@
         </ul>
     </div>
 @endif
+
 <div class="container py-4">
     <div class="text-center mb-4">
         <h1 class="section-title" style="font-size: 1.8rem;">← FINALIZAR PEDIDO →</h1>
@@ -42,7 +43,9 @@
                 <form action="{{ route('checkout.process') }}" method="POST" id="checkoutForm">
                     @csrf
 
-                    <!-- TIPO DE ENTREGA -->
+                    <!-- ========================================== -->
+                    <!-- 1. TIPO DE ENTREGA                          -->
+                    <!-- ========================================== -->
                     <div class="mb-3">
                         <label class="form-label fw-bold"><i class="bi bi-truck"></i> Tipo de entrega *</label>
                         <div class="d-flex gap-4">
@@ -62,7 +65,9 @@
                         <small class="text-muted"><i class="bi bi-geo-alt"></i> Tienda: Los Cedros 154, Víctor Larco Herrera, Trujillo</small>
                     </div>
 
-                    <!-- UBICACIÓN (solo para delivery) -->
+                    <!-- ========================================== -->
+                    <!-- 2. UBICACIÓN (solo para delivery)         -->
+                    <!-- ========================================== -->
                     <div id="deliveryFields" style="display: none;">
                         <div class="mb-3">
                             <label class="form-label"><i class="bi bi-search"></i> Buscar dirección *</label>
@@ -81,13 +86,24 @@
                             <small class="text-muted">Selecciona una dirección de la lista de sugerencias.</small>
                         </div>
 
+                        <!-- ========================================== -->
+                        <!-- 3. MAPA (AQUÍ VA EL MAPA)                -->
+                        <!-- ========================================== -->
+                        <div class="mb-3" id="mapContainer" style="display: none;">
+                            <label class="form-label"><i class="bi bi-geo-alt"></i> Ubicación exacta en el mapa</label>
+                            <div id="locationMap" style="height: 300px; border-radius: 8px; border: 2px solid var(--gray-200);"></div>
+                            <small class="text-muted">Arrastra el marcador para ajustar la ubicación exacta.</small>
+                        </div>
+
                         <div class="mb-3">
                             <label class="form-label"><i class="bi bi-pin-map"></i> Distrito</label>
                             <input type="text" name="district" class="form-control form-control-retro" placeholder="Ej: Víctor Larco, Trujillo" id="districtInput">
                         </div>
                     </div>
 
-                    <!-- TELÉFONO -->
+                    <!-- ========================================== -->
+                    <!-- 4. TELÉFONO                              -->
+                    <!-- ========================================== -->
                     <div class="mb-3">
                         <label class="form-label"><i class="bi bi-phone"></i> Teléfono *</label>
                         <input type="tel" name="phone" class="form-control form-control-retro" placeholder="987654321" required>
@@ -97,13 +113,17 @@
                         @enderror
                     </div>
 
-                    <!-- FECHA DE ENTREGA -->
+                    <!-- ========================================== -->
+                    <!-- 5. FECHA DE ENTREGA                      -->
+                    <!-- ========================================== -->
                     <div class="mb-3">
                         <label class="form-label"><i class="bi bi-calendar"></i> Fecha de entrega *</label>
                         <input type="date" name="delivery_date" class="form-control form-control-retro" min="{{ date('Y-m-d', strtotime('+1 day')) }}" required>
                     </div>
 
-                    <!-- MÉTODO DE PAGO -->
+                    <!-- ========================================== -->
+                    <!-- 6. MÉTODO DE PAGO                       -->
+                    <!-- ========================================== -->
                     <div class="mb-3">
                         <label class="form-label"><i class="bi bi-credit-card"></i> Método de pago *</label>
                         <select name="payment_method" class="form-select form-control-retro" required>
@@ -114,7 +134,9 @@
                         </select>
                     </div>
 
-                    <!-- REFERENCIA DE ENTREGA -->
+                    <!-- ========================================== -->
+                    <!-- 7. REFERENCIA DE ENTREGA                 -->
+                    <!-- ========================================== -->
                     <div class="mb-3">
                         <label class="form-label"><i class="bi bi-pin"></i> Referencia de entrega</label>
                         <div class="row g-2 mb-2">
@@ -138,7 +160,9 @@
                         <small class="text-muted"><i class="bi bi-info-circle"></i> Indicaciones para que el repartidor encuentre fácilmente el lugar.</small>
                     </div>
 
-                    <!-- INSTRUCCIONES ESPECIALES -->
+                    <!-- ========================================== -->
+                    <!-- 8. INSTRUCCIONES ESPECIALES              -->
+                    <!-- ========================================== -->
                     <div class="mb-3">
                         <label class="form-label"><i class="bi bi-chat-text"></i> Instrucciones especiales</label>
                         <textarea name="special_instructions" class="form-control form-control-retro" rows="3"></textarea>
@@ -152,6 +176,10 @@
                 </form>
             </div>
         </div>
+
+        <!-- ========================================== -->
+        <!-- 9. RESUMEN DEL PEDIDO                     -->
+        <!-- ========================================== -->
         <div class="col-lg-5">
             <div class="profile-card">
                 <h3 class="profile-section-title"><i class="bi bi-receipt"></i> RESUMEN</h3>
@@ -174,7 +202,6 @@
                     <span><i class="bi bi-rulers"></i> Distancia</span>
                     <span id="distanceText">0 km</span>
                 </div>
-                <!-- REFERENCIA DE ENTREGA (en resumen) -->
                 <div class="d-flex justify-content-between mt-2" id="referenceDisplay" style="display: none;">
                     <span><i class="bi bi-pin"></i> Referencia</span>
                     <span id="referenceText" class="text-muted small"></span>
@@ -191,6 +218,9 @@
 </div>
 @endsection
 
+<!-- ========================================== -->
+<!-- 10. SCRIPTS (AQUÍ VA TODO EL JAVASCRIPT)  -->
+<!-- ========================================== -->
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -221,10 +251,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedLng = null;
     let isAddressValid = false;
 
-    // Inicializar: deshabilitar campos de delivery (por defecto pickup)
+    // =============================================
+    // INICIALIZAR: DESHABILITAR CAMPOS DELIVERY
+    // =============================================
     deliveryFields.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
 
-    // Referencia en tiempo real
+    // =============================================
+    // REFERENCIA EN TIEMPO REAL
+    // =============================================
     const refTextarea = document.querySelector('textarea[name="delivery_reference"]');
     if (refTextarea) {
         refTextarea.addEventListener('input', function() {
@@ -238,7 +272,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Toggle pickup
+    // =============================================
+    // TOGGLE PICKUP / DELIVERY
+    // =============================================
     pickupRadio.addEventListener('change', function() {
         if (this.checked) {
             deliveryFields.style.display = 'none';
@@ -250,7 +286,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Toggle delivery
     deliveryRadio.addEventListener('change', function() {
         if (this.checked) {
             deliveryFields.style.display = 'block';
@@ -262,6 +297,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // =============================================
+    // BÚSQUEDA DE DIRECCIONES (NOMINATIM)
+    // =============================================
     let searchTimeout;
     addressSearch.addEventListener('input', function() {
         clearTimeout(searchTimeout);
@@ -297,6 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             addressLng.value = selectedLng;
                             suggestions.innerHTML = '';
 
+                            // Validar región
                             const addressData = item.address || {};
                             const region = addressData.state || addressData.region || '';
                             const city = addressData.city || addressData.town || addressData.village || '';
@@ -314,10 +353,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             locationValidation.innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> Ubicación válida en La Libertad.</span>';
                             isAddressValid = true;
 
+                            // Distrito
                             const district = addressData.suburb || addressData.city_district || addressData.town || '';
                             if (district) {
                                 districtInput.value = district;
                             }
+
+                            // INICIALIZAR MAPA CON LAS COORDENADAS
+                            initMap(selectedLat, selectedLng);
 
                             if (deliveryRadio.checked) {
                                 calculateDelivery(selectedLat, selectedLng);
@@ -338,6 +381,94 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // =============================================
+    // MAPA CON MARCADOR ARRASTRABLE
+    // =============================================
+    let map, marker;
+
+    function initMap(lat = -8.1120, lng = -79.0288) {
+        if (typeof L === 'undefined') {
+            // Cargar Leaflet si no está cargado
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            document.head.appendChild(link);
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            script.onload = () => {
+                createMap(lat, lng);
+            };
+            document.body.appendChild(script);
+        } else {
+            createMap(lat, lng);
+        }
+    }
+
+    function createMap(lat, lng) {
+        const container = document.getElementById('locationMap');
+        if (!container) return;
+
+        // Destruir mapa anterior si existe
+        if (map) {
+            map.remove();
+        }
+
+        map = L.map('locationMap').setView([lat, lng], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        const icon = L.icon({
+            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        marker = L.marker([lat, lng], { draggable: true, icon }).addTo(map);
+
+        marker.on('dragend', function(e) {
+            const pos = marker.getLatLng();
+            selectedLat = pos.lat;
+            selectedLng = pos.lng;
+            addressLat.value = selectedLat;
+            addressLng.value = selectedLng;
+
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${selectedLat}&lon=${selectedLng}&zoom=18&addressdetails=1`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.display_name) {
+                        deliveryAddress.value = data.display_name;
+                        addressSearch.value = data.display_name;
+                        const addressData = data.address || {};
+                        const region = addressData.state || addressData.region || '';
+                        const city = addressData.city || addressData.town || addressData.village || '';
+                        if (region.toLowerCase().includes('la libertad') || city.toLowerCase().includes('trujillo')) {
+                            locationValidation.innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> Ubicación válida en La Libertad.</span>';
+                            isAddressValid = true;
+                            const district = addressData.suburb || addressData.city_district || addressData.town || '';
+                            if (district) {
+                                districtInput.value = district;
+                            }
+                            if (deliveryRadio.checked) {
+                                calculateDelivery(selectedLat, selectedLng);
+                            }
+                        } else {
+                            locationValidation.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> La ubicación debe estar en La Libertad.</span>';
+                            isAddressValid = false;
+                        }
+                    }
+                });
+        });
+
+        document.getElementById('mapContainer').style.display = 'block';
+    }
+
+    // =============================================
+    // CÁLCULO DE DISTANCIA Y COSTO DE ENVÍO
+    // =============================================
     function calculateDelivery(lat, lng) {
         const url = `https://router.project-osrm.org/route/v1/driving/${storeLng},${storeLat};${lng},${lat}?overview=false`;
 
@@ -425,6 +556,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return R * c;
     }
 
+    // =============================================
+    // ACTUALIZAR TOTAL
+    // =============================================
     function updateTotal() {
         const subtotalText = subtotalDisplay.textContent.replace('S/. ', '').replace(',', '');
         const subtotal = parseFloat(subtotalText) || 0;
@@ -434,7 +568,9 @@ document.addEventListener('DOMContentLoaded', function() {
         totalDisplay.textContent = `S/. ${total.toFixed(2)}`;
     }
 
-    // Botones de referencia rápida
+    // =============================================
+    // BOTONES DE REFERENCIA RÁPIDA
+    // =============================================
     document.querySelectorAll('.ref-quick').forEach(btn => {
         btn.addEventListener('click', function() {
             const ref = this.dataset.ref;
@@ -450,7 +586,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Validación antes de enviar
+    // =============================================
+    // VALIDACIÓN ANTES DE ENVIAR
+    // =============================================
     document.getElementById('checkoutForm').addEventListener('submit', function(e) {
         if (deliveryRadio.checked && !isAddressValid) {
             e.preventDefault();
