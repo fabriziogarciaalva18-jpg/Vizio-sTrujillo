@@ -34,7 +34,7 @@ Route::get('/avatar/{filename}', function ($filename) {
 // Catálogo y detalle de producto (públicos)
 Route::get('/catalog', [ProductController::class, 'index'])->name('catalog');
 Route::get('/product/{product}', [ProductController::class, 'show'])->name('products.show');
-
+Route::get('/orders/{order}/track-location', [OrderController::class, 'trackLocation'])->name('orders.track-location');
 // =============================================
 // RUTAS AUTENTICADAS
 // (requieren login, verificación de email y usuario activo)

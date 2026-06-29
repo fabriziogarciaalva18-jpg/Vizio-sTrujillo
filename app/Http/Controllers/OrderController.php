@@ -454,4 +454,17 @@ class OrderController extends Controller
 
         return back()->with('success', 'Pedido cancelado correctamente.');
     }
+    public function trackLocation(Order $order)
+{
+    if ($order->user_id !== auth()->id()) {
+        abort(403);
+    }
+    return response()->json([
+        'location' => [
+            'lat' => $order->delivery_person_lat,
+            'lng' => $order->delivery_person_lng,
+            'updated_at' => $order->last_location_update ? $order->last_location_update->toIso8601String() : null,
+        ]
+    ]);
+}
 }

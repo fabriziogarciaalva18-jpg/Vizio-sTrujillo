@@ -219,5 +219,51 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+// ... dentro del DOMContentLoaded
+
+// =============================================
+// AUTO‑ACTUALIZACIÓN DE UBICACIÓN (repartidor)
+// =============================================
+let locationInterval = null;
+
+function startLocationUpdates() {
+    if (locationInterval) clearInterval(locationInterval);
+    locationInterval = setInterval(function() {
+        fetch(`/delivery/orders/${order.id}/location`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.location && data.location.lat && data.location.lng) {
+                    const lat = parseFloat(data.location.lat);
+                    const lng = parseFloat(data.location.lng);
+                    // Actualizar marcador del repartidor
+                    if (!personMarker) {
+                        personMarker = L.marker([lat, lng]).addTo(map)
+                            .bindPopup('🚚 Repartidor aquí');
+                    } else {
+                        personMarker.setLatLng([lat, lng]);
+                    }
+                    // Opcional: centrar el mapa en la nueva ubicación
+                    map.panTo([lat, lng]);
+                    // Actualizar timestamp
+                    const statusEl = document.getElementById('locationStatus');
+                    if (statusEl) {
+                        const time = data.location.updated_at ? new Date(data.location.updated_at).toLocaleTimeString() : 'ahora';
+                        statusEl.innerHTML = '✅ Ubicación actualizada: ' + time;
+                    }
+                }
+            })
+            .catch(err => console.error('Error al obtener ubicación:', err));
+    }, 10000); // cada 10 segundos
+}
+
+// Iniciar actualizaciones si el pedido está en estado de entrega
+if (order.status === 'preparing' || order.status === 'delivering') {
+    startLocationUpdates();
+}
+
+// Detener actualizaciones al salir de la página (opcional)
+window.addEventListener('beforeunload', function() {
+    if (locationInterval) clearInterval(locationInterval);
+});
 </script>
 @endpush

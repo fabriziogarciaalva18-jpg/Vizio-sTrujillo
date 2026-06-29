@@ -192,14 +192,13 @@ class DeliveryController extends Controller implements HasMiddleware
         $order->save();
 
         Delivery::updateOrCreate(
-    ['order_id' => $order->id],
-    [
-        'delivery_person_id' => auth()->id(),
-        'delivered_at' => now(),
-        'delivery_notes' => $request->delivery_note,
-        'status' => 'delivered',
-    ]
-);
+            ['order_id' => $order->id],
+            [
+                'delivery_person_id' => auth()->id(),
+                'status' => 'failed',
+                'delivery_notes' => $request->failure_reason,
+            ]
+        );
 
         return redirect()->route('delivery.dashboard')
             ->with('error', 'Entrega marcada como fallida. El pedido volverá a la cola.');
@@ -239,22 +238,21 @@ class DeliveryController extends Controller implements HasMiddleware
      * Obtener la ubicación actual del repartidor (para el cliente)
      */
     public function getLocation(Order $order)
-    {
-        if ($order->delivery_person_id !== auth()->id()) {
-            return response()->json(['error' => 'No autorizado'], 403);
-        }
-
-        return response()->json([
-            'order_id' => $order->id,
-            'order_number' => $order->order_number,
-            'location' => [
-                'lat' => $order->delivery_person_lat,
-                'lng' => $order->delivery_person_lng,
-                'updated_at' => $order->last_location_update ? $order->last_location_update->toIso8601String() : null,
-            ]
-        ]);
+{
+    if ($order->delivery_person_id !== auth()->id()) {
+        return response()->json(['error' => 'No autorizado'], 403);
     }
 
+    return response()->json([
+        'order_id' => $order->id,
+        'order_number' => $order->order_number,
+        'location' => [
+            'lat' => $order->delivery_person_lat,
+            'lng' => $order->delivery_person_lng,
+            'updated_at' => $order->last_location_update ? $order->last_location_update->toIso8601String() : null,
+        ]
+    ]);
+}
     // =============================================
     // MÉTODOS AUXILIARES
     // =============================================

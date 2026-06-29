@@ -68,7 +68,7 @@ class Order extends Model
     'delivery_person_lng' => 'decimal:8',
     'last_location_update' => 'datetime',
     'paid_at' => 'datetime',
-    'delivered_at' => 'datetime', // ✅ Agregar esta línea
+    'delivered_at' => 'datetime',
 ];
 
     // =============================================
