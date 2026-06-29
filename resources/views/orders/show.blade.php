@@ -76,6 +76,14 @@
                     </button>
                 </form>
                 @endif
+                @if($order->canBeCancelledByUser())
+    <form action="{{ route('orders.cancel', $order) }}" method="POST" class="mt-3">
+        @csrf
+        <button type="submit" class="btn-retro-danger w-100" onclick="return confirm('¿Cancelar este pedido?')">
+            <i class="bi bi-x-circle"></i> CANCELAR PEDIDO
+        </button>
+    </form>
+@endif
 
                 <a href="{{ route('orders.index') }}" class="btn-retro-secondary w-100 mt-2">
                     <i class="bi bi-arrow-left"></i> MIS PEDIDOS

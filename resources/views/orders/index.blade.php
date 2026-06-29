@@ -36,10 +36,18 @@
         </div>
         <div class="order-total">TOTAL: S/. {{ number_format($order->total , 2) }}</div>
         <div class="order-actions">
-            <a href="{{ route('orders.show', $order) }}" class="btn-retro-primary btn-sm">
-                <i class="bi bi-eye"></i> VER DETALLE
-            </a>
-        </div>
+    @if($order->canBeCancelledByUser())
+        <form action="{{ route('orders.cancel', $order) }}" method="POST" style="display:inline;">
+            @csrf
+            <button type="submit" class="btn-retro-danger btn-sm" onclick="return confirm('¿Cancelar este pedido?')">
+                <i class="bi bi-x-circle"></i> CANCELAR
+            </button>
+        </form>
+    @endif
+    <a href="{{ route('orders.show', $order) }}" class="btn-retro-secondary btn-sm">
+        <i class="bi bi-eye"></i> VER DETALLE
+    </a>
+</div>
     </div>
     @endforeach
     @endif

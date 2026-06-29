@@ -110,7 +110,7 @@
                             <option value="yape"><i class="bi bi-phone"></i> YAPE</option>
                             <option value="plin"><i class="bi bi-phone"></i> PLIN</option>
                             <option value="transferencia"><i class="bi bi-bank"></i> Transferencia bancaria</option>
-                            <option value="contraentrega"><i class="bi bi-cash-stack"></i> Contra entrega</option>
+                            <option value="contraentrega"><i class="bi bi-cash-stack"></i> Pago en efectivo (contra entrega)</option>
                         </select>
                     </div>
 
