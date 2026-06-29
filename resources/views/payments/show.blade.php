@@ -81,7 +81,6 @@
 
                 <hr>
 
-                <!-- Formulario para subir comprobante -->
                 <form action="{{ route('payment.voucher') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">

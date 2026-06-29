@@ -3,13 +3,13 @@
 return [
     'store' => [
         'name' => 'Los Cedros 154, Víctor Larco Herrera, Trujillo',
-        'lat' => -8.1260, // Ajusta estas coordenadas exactas con las de tu local
+        'lat' => -8.1260,
         'lng' => -79.0540,
     ],
     'fee' => [
-        'base' => 5.00,       // Tarifa base en soles
-        'per_km' => 1.50,     // Costo por kilómetro
-        'free_distance' => 2, // Kilómetros gratis
-        'max_distance' => 50, // Distancia máxima en km
+        'base' => 5.00,
+        'per_km' => 1.50,
+        'free_distance' => 2,
+        'max_distance' => 50,
     ],
 ];

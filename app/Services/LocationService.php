@@ -9,12 +9,13 @@ class LocationService
 {
     /**
      * Buscar dirección y obtener coordenadas usando Nominatim (OpenStreetMap)
+     * Validación mejorada para La Libertad
      */
     public function geocode($address)
     {
         $url = 'https://nominatim.openstreetmap.org/search';
         $response = Http::withHeaders([
-            'User-Agent' => 'VizioPasteleria/1.0 (contacto@vizio.pe)' // Obligatorio para Nominatim
+            'User-Agent' => 'VizioPasteleria/1.0 (contacto@vizio.pe)'
         ])->get($url, [
             'q' => $address . ', Trujillo, La Libertad, Peru',
             'format' => 'json',
@@ -30,12 +31,44 @@ class LocationService
         $data = $response->json()[0] ?? null;
         if (!$data) return null;
 
-        // Verificar que esté en La Libertad
         $addressDetails = $data['address'] ?? [];
-        $region = $addressDetails['state'] ?? $addressDetails['region'] ?? '';
-        $city = $addressDetails['city'] ?? $addressDetails['town'] ?? $addressDetails['village'] ?? '';
 
-        if (!str_contains(strtolower($region), 'la libertad') && !str_contains(strtolower($city), 'trujillo')) {
+        // Extraer todos los campos que puedan contener la región
+        $region = $addressDetails['state'] ??
+                  $addressDetails['region'] ??
+                  $addressDetails['county'] ??
+                  $addressDetails['province'] ??
+                  $addressDetails['city'] ??
+                  '';
+
+        $city = $addressDetails['city'] ??
+                $addressDetails['town'] ??
+                $addressDetails['village'] ??
+                $addressDetails['municipality'] ??
+                '';
+
+        // Normalizar y verificar
+        $regionLower = strtolower(trim($region));
+        $cityLower = strtolower(trim($city));
+        $fullAddress = strtolower($data['display_name'] ?? '');
+
+        // Verificar si está en La Libertad o Trujillo (más flexible)
+        $isValid = str_contains($regionLower, 'la libertad') ||
+                   str_contains($regionLower, 'libertad') ||
+                   str_contains($cityLower, 'trujillo') ||
+                   str_contains($fullAddress, 'la libertad') ||
+                   str_contains($fullAddress, 'trujillo');
+
+        // Log para depuración (opcional)
+        Log::info('Geocode result', [
+            'address' => $address,
+            'region' => $region,
+            'city' => $city,
+            'isValid' => $isValid,
+            'display_name' => $data['display_name']
+        ]);
+
+        if (!$isValid) {
             return [
                 'error' => 'La dirección debe estar en la región La Libertad o en Trujillo.',
                 'valid' => false

@@ -135,7 +135,6 @@ public function showPayment($method)
 
     return view('payments.show', compact('method', 'cart', 'checkoutData', 'total', 'subtotal', 'deliveryFee'));
 }
-
     /**
      * Subir comprobante (Yape, Plin, Transferencia)
      */

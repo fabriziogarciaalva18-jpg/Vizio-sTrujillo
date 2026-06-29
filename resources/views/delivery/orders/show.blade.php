@@ -21,7 +21,6 @@
             <div class="profile-card">
                 <h3 class="profile-section-title"><i class="bi bi-box-seam"></i> INFORMACIÓN DEL PEDIDO</h3>
 
-                <!-- Datos principales -->
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong><i class="bi bi-hash"></i> Pedido:</strong> #{{ $order->order_number }}</p>
@@ -51,7 +50,6 @@
 
                 <hr>
 
-                <!-- UBICACIÓN DE ENTREGA -->
                 <div class="mt-3">
                     <h5><i class="bi bi-geo-alt"></i> Ubicación de entrega</h5>
                     <p><strong>Dirección:</strong> {{ $order->delivery_address }}</p>
@@ -79,7 +77,6 @@
 
                 <hr>
 
-                <!-- PRODUCTOS -->
                 <div class="mt-3">
                     <h5><i class="bi bi-box-seam"></i> Productos</h5>
                     <div class="table-responsive">
@@ -157,7 +154,6 @@
                     </div>
                 </div>
 
-                <!-- INSTRUCCIONES ESPECIALES -->
                 @if($order->special_instructions)
                 <div class="mt-3">
                     <h5><i class="bi bi-chat-text"></i> Instrucciones especiales</h5>
@@ -168,7 +164,6 @@
         </div>
 
         <div class="col-lg-4">
-            <!-- Panel de acciones -->
             <div class="profile-card">
                 <h3 class="profile-section-title"><i class="bi bi-gear"></i> ACCIONES</h3>
 
@@ -202,7 +197,6 @@
                 @endif
             </div>
 
-            <!-- Resumen rápido -->
             <div class="profile-card mt-3">
                 <h3 class="profile-section-title"><i class="bi bi-info-circle"></i> DATOS RÁPIDOS</h3>
                 <ul class="list-unstyled">
