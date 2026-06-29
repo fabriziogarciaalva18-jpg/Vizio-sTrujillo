@@ -192,13 +192,14 @@ class DeliveryController extends Controller implements HasMiddleware
         $order->save();
 
         Delivery::updateOrCreate(
-            ['order_id' => $order->id],
-            [
-                'delivery_person_id' => auth()->id(),
-                'status' => 'failed',
-                'delivery_notes' => $request->failure_reason,
-            ]
-        );
+    ['order_id' => $order->id],
+    [
+        'delivery_person_id' => auth()->id(),
+        'delivered_at' => now(),
+        'delivery_notes' => $request->delivery_note,
+        'status' => 'delivered',
+    ]
+);
 
         return redirect()->route('delivery.dashboard')
             ->with('error', 'Entrega marcada como fallida. El pedido volverá a la cola.');

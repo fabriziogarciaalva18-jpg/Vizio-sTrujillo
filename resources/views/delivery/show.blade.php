@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            locationStatus.innerHTML = '<i class="bi bi-check-circle-fill"></i> Ubicación actualizada: ' +
+                            locationStatus.innerHTML = ' Ubicación actualizada: ' +
                                 new Date().toLocaleTimeString();
                         }
                     })
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             shareBtn.style.display = 'none';
             stopBtn.style.display = 'block';
-            locationStatus.innerHTML = '<i class="bi bi-arrow-repeat"></i> Compartiendo ubicación...';
+            locationStatus.innerHTML = ' Compartiendo ubicación...';
         });
     }
 
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             shareBtn.style.display = 'block';
             stopBtn.style.display = 'none';
-            locationStatus.innerHTML = '<i class="bi bi-stop-circle-fill"></i> Compartir detenido.';
+            locationStatus.innerHTML = ' Compartir detenido.';
         });
     }
 });

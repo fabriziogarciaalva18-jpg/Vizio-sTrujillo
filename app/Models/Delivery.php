@@ -10,11 +10,11 @@ class Delivery extends Model
     use HasFactory;
 
     protected $fillable = [
-        'order_id',           // ✅ Agregado
-        'delivery_person_id', // ✅ Agregado
-        'delivered_at',       // ✅ Agregado
-        'delivery_notes',     // ✅ Agregado
-        'status',             // ✅ Agregado
+        'order_id',
+        'delivery_person_id',
+        'delivered_at',
+        'delivery_notes',
+        'status',
     ];
 
     public function order()
