@@ -15,7 +15,9 @@ class Delivery extends Model
     'delivered_at',
     'delivery_notes',
     'status',
-    'scheduled_date', // ✅ Agregado
+    'scheduled_date',        // ✅ Agregado
+    'scheduled_time_start',  // ✅ Agregado
+    'scheduled_time_end',    // ✅ Agregado
 ];
 
     public function order()
