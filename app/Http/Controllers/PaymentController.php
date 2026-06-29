@@ -116,25 +116,25 @@ class PaymentController extends Controller
     /**
      * Mostrar página de pago
      */
-    public function showPayment($method)
-    {
-        $cart = session()->get('cart', []);
-        $checkoutData = session()->get('checkout_data', []);
+public function showPayment($method)
+{
+    $cart = session()->get('cart', []);
+    $checkoutData = session()->get('checkout_data', []);
 
-        if (empty($cart) || empty($checkoutData)) {
-            return redirect()->route('cart')->with('error', 'No hay datos del pedido');
-        }
-
-        $subtotal = 0;
-        foreach ($cart as $item) {
-            $subtotal += ($item['unit_price'] ?? $item['price'] ?? 0) * $item['quantity'];
-        }
-
-        $deliveryFee = $checkoutData['delivery_fee'] ?? config('payments.delivery_fee', 800);
-        $total = $subtotal + $deliveryFee;
-
-        return view('payments.show', compact('method', 'cart', 'checkoutData', 'total', 'subtotal', 'deliveryFee'));
+    if (empty($cart) || empty($checkoutData)) {
+        return redirect()->route('cart')->with('error', 'No hay datos del pedido');
     }
+
+    $subtotal = 0;
+    foreach ($cart as $item) {
+        $subtotal += ($item['unit_price'] ?? $item['price'] ?? 0) * $item['quantity'];
+    }
+
+    $deliveryFee = $checkoutData['delivery_fee'] ?? 0;
+    $total = $subtotal + $deliveryFee;
+
+    return view('payments.show', compact('method', 'cart', 'checkoutData', 'total', 'subtotal', 'deliveryFee'));
+}
 
     /**
      * Subir comprobante (Yape, Plin, Transferencia)

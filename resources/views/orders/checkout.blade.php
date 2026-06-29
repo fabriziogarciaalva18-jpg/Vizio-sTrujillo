@@ -179,6 +179,13 @@
                     <span><i class="bi bi-rulers"></i> Distancia</span>
                     <span id="distanceText">0 km</span>
                 </div>
+                <!-- ========================================= -->
+                <!-- REFERENCIA DE ENTREGA (en resumen)        -->
+                <!-- ========================================= -->
+                <div class="d-flex justify-content-between mt-2" id="referenceDisplay" style="display: none;">
+                    <span><i class="bi bi-pin"></i> Referencia</span>
+                    <span id="referenceText" class="text-muted small"></span>
+                </div>
                 <hr>
                 <div class="d-flex justify-content-between fw-bold">
                     <span>TOTAL</span>
@@ -212,6 +219,8 @@
         const locationValidation = document.getElementById('locationValidation');
         const submitBtn = document.getElementById('submitBtn');
         const districtInput = document.getElementById('districtInput');
+        const referenceDisplay = document.getElementById('referenceDisplay');
+        const referenceText = document.getElementById('referenceText');
 
         const storeLat = {{ config('delivery.store.lat') }};
         const storeLng = {{ config('delivery.store.lng') }};
@@ -220,7 +229,25 @@
         let selectedLng = null;
         let isAddressValid = false;
 
-        // Toggle campos de delivery
+        // =============================================
+        // ACTUALIZAR REFERENCIA EN TIEMPO REAL
+        // =============================================
+        const refTextarea = document.querySelector('textarea[name="delivery_reference"]');
+        if (refTextarea) {
+            refTextarea.addEventListener('input', function() {
+                const ref = this.value.trim();
+                if (ref) {
+                    referenceDisplay.style.display = 'flex';
+                    referenceText.textContent = ref;
+                } else {
+                    referenceDisplay.style.display = 'none';
+                }
+            });
+        }
+
+        // =============================================
+        // TOGGLE CAMPOS DE DELIVERY
+        // =============================================
         pickupRadio.addEventListener('change', function() {
             if (this.checked) {
                 deliveryFields.style.display = 'none';
@@ -241,7 +268,9 @@
             }
         });
 
-        // Búsqueda de direcciones con Nominatim
+        // =============================================
+        // BÚSQUEDA DE DIRECCIONES CON NOMINATIM
+        // =============================================
         let searchTimeout;
         addressSearch.addEventListener('input', function() {
             clearTimeout(searchTimeout);
@@ -319,7 +348,9 @@
             }
         });
 
-        // Calcular distancia y envío
+        // =============================================
+        // CÁLCULO DE DISTANCIA Y ENVÍO
+        // =============================================
         function calculateDelivery(lat, lng) {
             const url = `https://router.project-osrm.org/route/v1/driving/${storeLng},${storeLat};${lng},${lat}?overview=false`;
 
@@ -434,13 +465,16 @@
             });
         });
 
-        // Validación antes de enviar el formulario
+        // =============================================
+        // VALIDACIÓN ANTES DE ENVIAR
+        // =============================================
         document.getElementById('checkoutForm').addEventListener('submit', function(e) {
             if (deliveryRadio.checked && !isAddressValid) {
                 e.preventDefault();
                 alert('Por favor, selecciona una dirección válida de la lista de sugerencias.');
                 return;
             }
+            // La referencia no es obligatoria, así que no la validamos.
         });
     });
 </script>
