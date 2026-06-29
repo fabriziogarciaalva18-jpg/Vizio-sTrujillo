@@ -146,6 +146,13 @@
 </li>
 <li><hr class="dropdown-divider"></li>
 @endif
+@if(auth()->user()->is_delivery)
+    <li class="nav-item">
+        <a class="nav-link {{ request()->routeIs('delivery.*') ? 'active' : '' }}" href="{{ route('delivery.dashboard') }}">
+            <i class="bi bi-truck"></i> ENTREGAS
+        </a>
+    </li>
+@endif
                             <li>
                                 <a class="dropdown-item" href="{{ route('profile.edit') }}">
                                     <i class="bi bi-person"></i> Mi Perfil

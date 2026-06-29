@@ -8,9 +8,19 @@ use App\Models\Delivery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-
 class DeliveryController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['auth', 'verified']);
+        $this->middleware(function ($request, $next) {
+            if (!auth()->user()->is_delivery) {
+                abort(403, 'Acceso solo para repartidores.');
+            }
+            return $next($request);
+        });
+    }
+
     /**
      * Dashboard del repartidor
      */
@@ -18,26 +28,40 @@ class DeliveryController extends Controller
     {
         $today = Carbon::today();
 
-        // Pedidos preparados del día de hoy (para entregar)
-        $deliveries = Order::where('status', 'preparing')
+        // Pedidos disponibles para tomar (preparing, sin repartidor, fecha de hoy)
+        $availableOrders = Order::where('status', 'preparing')
+            ->whereNull('delivery_person_id')
             ->whereDate('delivery_date', $today)
             ->with('user')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('delivery_date', 'asc')
+            ->get();
+
+        // Pedidos asignados a este repartidor
+        $myDeliveries = Order::where('delivery_person_id', auth()->id())
+            ->whereIn('status', ['preparing', 'delivering'])
+            ->whereDate('delivery_date', $today)
+            ->with('user')
+            ->orderBy('delivery_date', 'asc')
+            ->get();
+
+        // Historial de entregas (últimos 5)
+        $history = Order::where('delivery_person_id', auth()->id())
+            ->where('status', 'delivered')
+            ->orderBy('delivered_at', 'desc')
+            ->limit(5)
             ->get();
 
         // Estadísticas
         $stats = [
-            'total_today' => $deliveries->count(),
-            'delivered_today' => Order::where('status', 'delivered')
-                ->whereDate('delivery_date', $today)
+            'available' => $availableOrders->count(),
+            'my_deliveries' => $myDeliveries->count(),
+            'delivered_today' => Order::where('delivery_person_id', auth()->id())
+                ->where('status', 'delivered')
+                ->whereDate('delivered_at', $today)
                 ->count(),
-            'pending_today' => Order::where('status', 'preparing')
-                ->whereDate('delivery_date', $today)
-                ->count(),
-            'total_km' => $this->calculateTotalDistance($deliveries),
         ];
 
-        return view('delivery.dashboard', compact('deliveries', 'stats'));
+        return view('delivery.dashboard', compact('availableOrders', 'myDeliveries', 'history', 'stats'));
     }
 
     /**
@@ -66,9 +90,9 @@ class DeliveryController extends Controller
      */
     public function show(Order $order)
     {
-        // Verificar que sea del día actual y esté preparado
-        if ($order->status !== 'preparing' || $order->delivery_date->format('Y-m-d') !== Carbon::today()->format('Y-m-d')) {
-            return redirect()->route('delivery.dashboard')->with('error', 'Este pedido no está disponible para entrega.');
+        // Verificar que el repartidor tenga asignado este pedido
+        if ($order->delivery_person_id !== auth()->id()) {
+            abort(403, 'No tienes permiso para ver este pedido.');
         }
 
         $storeLocation = [
@@ -84,25 +108,27 @@ class DeliveryController extends Controller
      */
     public function confirmDelivery(Request $request, Order $order)
     {
+        if ($order->delivery_person_id !== auth()->id()) {
+            abort(403);
+        }
+
         $request->validate([
             'delivery_note' => 'nullable|string|max:255',
         ]);
 
-        // Verificar que sea del día actual y esté preparado
-        if ($order->status !== 'preparing' || $order->delivery_date->format('Y-m-d') !== Carbon::today()->format('Y-m-d')) {
-            return redirect()->route('delivery.dashboard')->with('error', 'Este pedido no está disponible para entrega.');
+        if ($order->status !== 'delivering' && $order->status !== 'preparing') {
+            return redirect()->route('delivery.dashboard')
+                ->with('error', 'Este pedido no está en estado de entrega.');
         }
 
         DB::beginTransaction();
 
         try {
-            // Actualizar estado del pedido
             $order->status = 'delivered';
             $order->delivered_at = now();
             $order->save();
 
-            // Crear o actualizar registro de entrega
-            $delivery = Delivery::updateOrCreate(
+            Delivery::updateOrCreate(
                 ['order_id' => $order->id],
                 [
                     'delivery_person_id' => auth()->id(),
@@ -118,8 +144,20 @@ class DeliveryController extends Controller
                 ->with('success', 'Pedido entregado correctamente.');
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Error al confirmar la entrega: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al confirmar: ' . $e->getMessage());
         }
+    }
+     public function takeOrder(Order $order)
+    {
+        if (!$order->isAvailableForDelivery()) {
+            return redirect()->route('delivery.dashboard')
+                ->with('error', 'Este pedido ya no está disponible.');
+        }
+
+        $order->assignToDelivery(auth()->id());
+
+        return redirect()->route('delivery.dashboard')
+            ->with('success', 'Pedido #' . $order->order_number . ' asignado correctamente.');
     }
 
     /**
@@ -127,15 +165,24 @@ class DeliveryController extends Controller
      */
     public function markAsFailed(Request $request, Order $order)
     {
+        if ($order->delivery_person_id !== auth()->id()) {
+            abort(403);
+        }
+
         $request->validate([
             'failure_reason' => 'required|string|max:255',
         ]);
 
-        if ($order->status !== 'preparing' || $order->delivery_date->format('Y-m-d') !== Carbon::today()->format('Y-m-d')) {
-            return redirect()->route('delivery.dashboard')->with('error', 'Este pedido no está disponible.');
+        if ($order->status !== 'delivering' && $order->status !== 'preparing') {
+            return redirect()->route('delivery.dashboard')
+                ->with('error', 'Este pedido no se puede marcar como fallido.');
         }
 
-        $delivery = Delivery::updateOrCreate(
+        $order->status = 'pending';
+        $order->delivery_person_id = null;
+        $order->save();
+
+        Delivery::updateOrCreate(
             ['order_id' => $order->id],
             [
                 'delivery_person_id' => auth()->id(),
@@ -144,29 +191,14 @@ class DeliveryController extends Controller
             ]
         );
 
-        // Volver a pending para que el admin lo reassigne
-        $order->status = 'pending';
-        $order->save();
-
         return redirect()->route('delivery.dashboard')
             ->with('error', 'Entrega marcada como fallida. El pedido volverá a la cola.');
     }
 
-    // =============================================
-    // NUEVOS MÉTODOS PARA UBICACIÓN EN TIEMPO REAL
-    // =============================================
-
-    /**
-     * Actualizar ubicación del repartidor (vía AJAX)
-     */
-    public function updateLocation(Request $request, Order $order)
+     public function updateLocation(Request $request, Order $order)
     {
-        // Verificar que el repartidor tenga asignado este pedido
-        // Si no hay asignación, permitir que cualquier repartidor actualice (según tu lógica)
-        // Aquí asumimos que el repartidor está autenticado y puede actualizar cualquier pedido en 'preparing'
-        // Podrías también verificar que el pedido esté en estado 'preparing'
-        if ($order->status !== 'preparing') {
-            return response()->json(['error' => 'El pedido no está en estado de preparación'], 422);
+        if ($order->delivery_person_id !== auth()->id()) {
+            return response()->json(['error' => 'No autorizado'], 403);
         }
 
         $request->validate([
@@ -174,8 +206,6 @@ class DeliveryController extends Controller
             'lng' => 'required|numeric|between:-85,-70',
         ]);
 
-        // Actualizar en la tabla orders (columnas delivery_person_lat, delivery_person_lng, last_location_update)
-        // Si no existen, asegúrate de haber creado la migración.
         $order->delivery_person_lat = $request->lat;
         $order->delivery_person_lng = $request->lng;
         $order->last_location_update = now();
@@ -191,16 +221,21 @@ class DeliveryController extends Controller
             ]
         ]);
     }
+    // =============================================
+    // NUEVOS MÉTODOS PARA UBICACIÓN EN TIEMPO REAL
+    // =============================================
+
+    /**
+     * Actualizar ubicación del repartidor (vía AJAX)
+     */
 
     /**
      * Obtener la ubicación actual del repartidor (para el cliente)
      */
-    public function getLocation(Order $order)
+     public function getLocation(Order $order)
     {
-        // Permitir que cualquier usuario autenticado vea la ubicación si el pedido está en 'preparing' o 'delivering'
-        // O solo si es el cliente dueño del pedido (puedes añadir esa verificación)
-        if ($order->status !== 'preparing' && $order->status !== 'delivering') {
-            return response()->json(['error' => 'El pedido no está en camino'], 404);
+        if ($order->delivery_person_id !== auth()->id()) {
+            return response()->json(['error' => 'No autorizado'], 403);
         }
 
         return response()->json([

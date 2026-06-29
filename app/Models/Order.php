@@ -74,7 +74,21 @@ public function getDeliveryPersonLocationAttribute()
     }
     return null;
 }
+public function assignToDelivery($userId)
+{
+    $this->update([
+        'delivery_person_id' => $userId,
+        'status' => 'delivering',
+    ]);
+}
 
+// Verificar si el pedido está disponible para ser tomado
+public function isAvailableForDelivery()
+{
+    return $this->status === 'preparing' &&
+           is_null($this->delivery_person_id) &&
+           $this->delivery_date->isToday();
+}
 // Actualizar ubicación del repartidor
 public function updateDeliveryPersonLocation($lat, $lng)
 {
