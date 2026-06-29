@@ -8,17 +8,20 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'is_delivery')) {
+        // ✅ Verificar si la columna ya existe antes de agregarla
+        if (!Schema::hasColumn('users', 'is_delivery')) {
+            Schema::table('users', function (Blueprint $table) {
                 $table->boolean('is_delivery')->default(false)->after('is_admin');
-            }
-        });
+            });
+        }
     }
 
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('is_delivery');
-        });
+        if (Schema::hasColumn('users', 'is_delivery')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn('is_delivery');
+            });
+        }
     }
 };
