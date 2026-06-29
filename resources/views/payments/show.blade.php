@@ -1,6 +1,7 @@
 @extends('layouts.retro')
 
 @section('title', 'Realizar Pago - Vizio\'s')
+
 @section('content')
 <div class="container py-4">
     <div class="text-center mb-4">
@@ -9,13 +10,20 @@
     </div>
 
     @if ($errors->any())
-    <div class="alert alert-retro" style="background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5;">
-        <ul class="mb-0">
-            @foreach ($errors->all() as $error)
-                <li><i class="bi bi-exclamation-triangle-fill"></i> {{ $error }}</li>
-            @endforeach
-        </ul>
-    </div
+        <div class="alert alert-retro" style="background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5;">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li><i class="bi bi-exclamation-triangle-fill"></i> {{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-retro" style="background: #FEE2E2; color: #991B1B;">
+            {{ session('error') }}
+        </div>
+    @endif
 
     <div class="row">
         <div class="col-lg-6">
