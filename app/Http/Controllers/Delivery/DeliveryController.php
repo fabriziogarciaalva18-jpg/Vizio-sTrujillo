@@ -8,21 +8,25 @@ use App\Models\Delivery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-class DeliveryController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class DeliveryController extends Controller implements HasMiddleware
 {
-    public function __construct()
+    /**
+     * Define los middlewares que se aplicarán a este controlador.
+     */
+    public static function middleware(): array
     {
-        $this->middleware(['auth', 'verified']);
-        $this->middleware(function ($request, $next) {
-            if (!auth()->user()->is_delivery) {
-                abort(403, 'Acceso solo para repartidores.');
-            }
-            return $next($request);
-        });
+        return [
+            new Middleware('auth'),
+            new Middleware('verified'),
+            new Middleware('is_delivery'), // ← Debes crear este middleware o usar un closure
+        ];
     }
 
     /**
-     * Dashboard del repartidor
+     * Dashboard del repartidor: pedidos disponibles, asignados e historial.
      */
     public function dashboard()
     {
@@ -86,11 +90,26 @@ class DeliveryController extends Controller
     }
 
     /**
-     * Ver detalle de una entrega
+     * Tomar un pedido (asignárselo)
+     */
+    public function takeOrder(Order $order)
+    {
+        if (!$order->isAvailableForDelivery()) {
+            return redirect()->route('delivery.dashboard')
+                ->with('error', 'Este pedido ya no está disponible.');
+        }
+
+        $order->assignToDelivery(auth()->id());
+
+        return redirect()->route('delivery.dashboard')
+            ->with('success', 'Pedido #' . $order->order_number . ' asignado correctamente.');
+    }
+
+    /**
+     * Ver detalle de una entrega asignada
      */
     public function show(Order $order)
     {
-        // Verificar que el repartidor tenga asignado este pedido
         if ($order->delivery_person_id !== auth()->id()) {
             abort(403, 'No tienes permiso para ver este pedido.');
         }
@@ -147,21 +166,9 @@ class DeliveryController extends Controller
             return redirect()->back()->with('error', 'Error al confirmar: ' . $e->getMessage());
         }
     }
-     public function takeOrder(Order $order)
-    {
-        if (!$order->isAvailableForDelivery()) {
-            return redirect()->route('delivery.dashboard')
-                ->with('error', 'Este pedido ya no está disponible.');
-        }
-
-        $order->assignToDelivery(auth()->id());
-
-        return redirect()->route('delivery.dashboard')
-            ->with('success', 'Pedido #' . $order->order_number . ' asignado correctamente.');
-    }
 
     /**
-     * Marcar como no entregado (problema)
+     * Marcar como fallido
      */
     public function markAsFailed(Request $request, Order $order)
     {
@@ -195,7 +202,10 @@ class DeliveryController extends Controller
             ->with('error', 'Entrega marcada como fallida. El pedido volverá a la cola.');
     }
 
-     public function updateLocation(Request $request, Order $order)
+    /**
+     * Actualizar ubicación del repartidor (vía AJAX)
+     */
+    public function updateLocation(Request $request, Order $order)
     {
         if ($order->delivery_person_id !== auth()->id()) {
             return response()->json(['error' => 'No autorizado'], 403);
@@ -221,18 +231,11 @@ class DeliveryController extends Controller
             ]
         ]);
     }
-    // =============================================
-    // NUEVOS MÉTODOS PARA UBICACIÓN EN TIEMPO REAL
-    // =============================================
-
-    /**
-     * Actualizar ubicación del repartidor (vía AJAX)
-     */
 
     /**
      * Obtener la ubicación actual del repartidor (para el cliente)
      */
-     public function getLocation(Order $order)
+    public function getLocation(Order $order)
     {
         if ($order->delivery_person_id !== auth()->id()) {
             return response()->json(['error' => 'No autorizado'], 403);

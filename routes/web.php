@@ -19,7 +19,15 @@ use App\Http\Controllers\HomeController;
 // RUTAS PÚBLICAS
 // =============================================
 Route::get('/', [HomeController::class, 'index'])->name('home');
-
+Route::middleware(['auth', 'verified', CheckUserActive::class])->prefix('delivery')->name('delivery.')->group(function () {
+    Route::get('/dashboard', [DeliveryController::class, 'dashboard'])->name('dashboard');
+    Route::post('/take/{order}', [DeliveryController::class, 'takeOrder'])->name('take');
+    Route::get('/orders/{order}', [DeliveryController::class, 'show'])->name('show');
+    Route::post('/orders/{order}/update-location', [DeliveryController::class, 'updateLocation'])->name('update-location');
+    Route::get('/orders/{order}/location', [DeliveryController::class, 'getLocation'])->name('location');
+    Route::post('/orders/{order}/confirm', [DeliveryController::class, 'confirmDelivery'])->name('confirm');
+    Route::post('/orders/{order}/failed', [DeliveryController::class, 'markAsFailed'])->name('failed');
+});
 // Ruta para servir avatares (pública)
 Route::get('/avatar/{filename}', function ($filename) {
     $path = storage_path('app/public/avatars/' . $filename);
