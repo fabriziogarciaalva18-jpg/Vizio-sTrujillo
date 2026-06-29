@@ -56,19 +56,20 @@ class Order extends Model
     ];
 
     protected $casts = [
-        'subtotal' => 'decimal:2',
-        'delivery_fee' => 'decimal:2',
-        'discount' => 'decimal:2',
-        'total' => 'decimal:2',
-        'delivery_date' => 'date',
-        'address_lat' => 'decimal:8',
-        'address_lng' => 'decimal:8',
-        'delivery_distance' => 'decimal:2',
-        'delivery_person_lat' => 'decimal:8',
-        'delivery_person_lng' => 'decimal:8',
-        'last_location_update' => 'datetime',
-        'paid_at' => 'datetime',
-    ];
+    'subtotal' => 'decimal:2',
+    'delivery_fee' => 'decimal:2',
+    'discount' => 'decimal:2',
+    'total' => 'decimal:2',
+    'delivery_date' => 'date',
+    'address_lat' => 'decimal:8',
+    'address_lng' => 'decimal:8',
+    'delivery_distance' => 'decimal:2',
+    'delivery_person_lat' => 'decimal:8',
+    'delivery_person_lng' => 'decimal:8',
+    'last_location_update' => 'datetime',
+    'paid_at' => 'datetime',
+    'delivered_at' => 'datetime', // ✅ Agregar esta línea
+];
 
     // =============================================
     // RELACIONES
