@@ -194,49 +194,44 @@ class OrderController extends Controller
         $lng = null;
 
         if ($deliveryType === 'delivery') {
-            // RE-VALIDAR EN EL SERVIDOR (evita manipulación del frontend)
-            $locationService = new LocationService();
-            
-            // Log para depuración
-            Log::info('Geocode request:', ['address' => $request->delivery_address]);
-            
-            $geo = $locationService->geocode($request->delivery_address);
+    $locationService = new LocationService();
+    $geo = $locationService->geocode($request->delivery_address);
 
-            if (!$geo || !$geo['valid']) {
-                Log::warning('Geocode failed:', ['geo' => $geo]);
-                return back()->with('error', $geo['error'] ?? 'Dirección inválida. Asegúrate de que esté en La Libertad.')->withInput();
-            }
+    // ✅ Ahora $geo siempre tiene 'valid' => true (por el fallback)
+    if (!$geo) {
+        return back()->with('error', 'No se pudo verificar la dirección.')->withInput();
+    }
 
-            // Usar las coordenadas reales (no las que vengan del frontend)
-            $lat = $geo['lat'];
-            $lng = $geo['lng'];
+    // Si hay advertencia, mostrarla
+    if (!empty($geo['warning'])) {
+        session()->flash('warning', $geo['warning']);
+    }
 
-            Log::info('Geocode success:', ['lat' => $lat, 'lng' => $lng, 'display_name' => $geo['display_name']]);
+    $lat = $geo['lat'];
+    $lng = $geo['lng'];
 
-            // Calcular distancia usando las coordenadas reales
-            $storeLat = config('delivery.store.lat');
-            $storeLng = config('delivery.store.lng');
+    // Calcular distancia y tarifa
+    $storeLat = config('delivery.store.lat');
+    $storeLng = config('delivery.store.lng');
+    $distance = $locationService->calculateDistance($storeLat, $storeLng, $lat, $lng);
+    $deliveryDistance = $distance;
 
-            $distance = $locationService->calculateDistance($storeLat, $storeLng, $lat, $lng);
-            $deliveryDistance = $distance;
+    $feeService = new DeliveryFeeService();
+    $feeResult = $feeService->calculate($distance);
 
-            $feeService = new DeliveryFeeService();
-            $feeResult = $feeService->calculate($distance);
+    if (!$feeResult['valid']) {
+        return back()->with('error', $feeResult['error']);
+    }
 
-            if (!$feeResult['valid']) {
-                return back()->with('error', $feeResult['error']);
-            }
+    $deliveryFee = $feeResult['fee'];
 
-            $deliveryFee = $feeResult['fee'];
-
-            // Forzar los valores reales (ignorar lo que venga del frontend)
-            $request->merge([
-                'address_lat' => $lat,
-                'address_lng' => $lng,
-                'delivery_distance' => $deliveryDistance,
-                'delivery_fee' => $deliveryFee,
-            ]);
-        } else {
+    $request->merge([
+        'address_lat' => $lat,
+        'address_lng' => $lng,
+        'delivery_distance' => $deliveryDistance,
+        'delivery_fee' => $deliveryFee,
+    ]);
+} else {
             // Recojo en tienda: dirección fija y sin costo de envío
             $request->merge([
                 'delivery_address' => 'Recojo en tienda - Los Cedros 154, Víctor Larco Herrera',
