@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Http\Middleware\CheckIsDelivery; // 👈 IMPORTAR EL MIDDLEWARE
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,9 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // 👇 REGISTRO DEL ALIAS
+        // 👇 REGISTRAR EL ALIAS DEL MIDDLEWARE AQUÍ
         $middleware->alias([
-            'is_delivery' => 'App\\Http\\Middleware\\CheckIsDelivery',
+            'is_delivery' => CheckIsDelivery::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -21,8 +21,8 @@ class DeliveryController extends Controller implements HasMiddleware
     return [
         new Middleware('auth'),
         new Middleware('verified'),
-        new Middleware(\App\Http\Middleware\CheckIsDelivery::class), // ✅ Usar clase directamente
-    ];
+new Middleware(CheckIsDelivery::class), // 👈 SIN ALIAS
+        ];
 }
 
     /**
