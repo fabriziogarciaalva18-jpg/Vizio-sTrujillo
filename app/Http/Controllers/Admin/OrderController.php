@@ -85,7 +85,7 @@ class OrderController extends Controller
 
         // Si el estado es 'rejected', también marcamos el pago como rechazado
         if ($request->status === 'rejected') {
-            $order->payment_status = 'rejected';
+            $order->payment_status = 'failed';
         }
 
         $order->status = $request->status;
