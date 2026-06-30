@@ -11,9 +11,6 @@
         </a>
     </div>
 
-    @if(session('error'))
-        <div class="alert alert-retro" style="background: #FEE2E2; color: #991B1B;">{{ session('error') }}</div>
-    @endif
 
     <div class="row g-4">
         <!-- Columna izquierda: Información del pedido -->

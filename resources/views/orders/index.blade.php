@@ -9,15 +9,6 @@
         <div class="section-divider"></div>
     </div>
 
-    @if($orders->isEmpty())
-    <div class="text-center py-5">
-        <i class="bi bi-inbox" style="font-size: 4rem; color: #9E9890;"></i>
-        <p class="mt-3 text-muted">No tienes pedidos realizados.</p>
-        <a href="{{ route('catalog') }}" class="btn-retro-primary mt-2">
-            <i class="bi bi-grid-3x3-gap-fill"></i> VER CATÁLOGO
-        </a>
-    </div>
-    @else
     @foreach($orders as $order)
     <div class="order-card mb-3">
         <div class="order-header">

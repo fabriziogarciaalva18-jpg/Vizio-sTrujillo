@@ -3,15 +3,6 @@
 @section('title', 'Checkout - Vizio\'s')
 
 @section('content')
-@if ($errors->any())
-    <div class="alert alert-retro" style="background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5;">
-        <ul class="mb-0">
-            @foreach ($errors->all() as $error)
-                <li><i class="bi bi-exclamation-triangle-fill"></i> {{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
 
 <div class="container py-4">
     <div class="text-center mb-4">

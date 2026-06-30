@@ -9,18 +9,6 @@
         <div class="section-divider"></div>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-retro" style="background: #DCFCE7; color: #166534;">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-retro" style="background: #FEE2E2; color: #991B1B;">
-            {{ session('error') }}
-        </div>
-    @endif
-
     <div class="row">
         <!-- ========================================== -->
         <!-- COLUMNA IZQUIERDA: Información del pedido  -->

@@ -9,14 +9,6 @@
         <div class="section-divider"></div>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success" style="background: #DCFCE7; color: #166534;">{{ session('success') }}</div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger" style="background: #FEE2E2; color: #991B1B;">{{ session('error') }}</div>
-    @endif
-
     <div class="admin-card-retro">
         <div class="table-responsive">
             <table class="admin-table-retro">
