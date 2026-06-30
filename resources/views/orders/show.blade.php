@@ -186,20 +186,12 @@
             <!-- ========================================== -->
             <!-- MAPA DE SEGUIMIENTO (Repartidor)           -->
             <!-- ========================================== -->
-            @if($order->isDelivering() && $order->delivery_person_lat && $order->delivery_person_lng)
+            @if($order->isDelivering() && $order->delivery_person_id)
                 <div class="profile-card mt-3">
                     <h3 class="profile-section-title"><i class="bi bi-truck"></i> REPARTIDOR EN CAMINO</h3>
-                    <div id="deliveryMap" style="height: 250px; border-radius: 8px; margin-bottom: 0.5rem;"></div>
-                    <p class="text-muted small mb-0">
-                        <i class="bi bi-clock"></i> Última actualización:
-                        @if($order->last_location_update)
-                            {{ \Carbon\Carbon::parse($order->last_location_update)->diffForHumans() }}
-                        @else
-                            Hace unos momentos
-                        @endif
-                    </p>
-                    <p class="text-muted small">
-                        <i class="bi bi-geo-alt"></i> El repartidor está en camino a tu dirección.
+                    <div id="clientMap" style="height: 250px; border-radius: 8px; margin-bottom: 0.5rem;"></div>
+                    <p class="text-muted small" id="locationUpdateTime">
+                        <i class="bi bi-clock"></i> Última actualización: ahora
                     </p>
                 </div>
             @endif
@@ -209,64 +201,111 @@
 @endsection
 
 @push('scripts')
-@if($order->isDelivering() && $order->delivery_person_lat && $order->delivery_person_lng)
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
+<!-- ========================================== -->
+<!-- MAPA DE SEGUIMIENTO EN TIEMPO REAL        -->
+<!-- ========================================== -->
+@if($order->isDelivering() && $order->delivery_person_id)
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const order = @json($order);
-        const location = {
-            lat: parseFloat(order.delivery_person_lat),
-            lng: parseFloat(order.delivery_person_lng)
-        };
+        const orderId = {{ $order->id }};
 
-        if (location.lat && location.lng) {
-            // Inicializar mapa
-            const map = L.map('deliveryMap').setView([location.lat, location.lng], 15);
+        // Inicializar mapa
+        const map = L.map('clientMap').setView([-8.1120, -79.0288], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
 
-            // Capa de OpenStreetMap
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
+        let marker = null;
+        let deliveryMarker = null;
 
-            // Icono personalizado para el repartidor
-            const deliveryIcon = L.icon({
-                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
+        // Icono para el repartidor
+        const deliveryIcon = L.icon({
+            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
 
-            // Marcador del repartidor
-            const marker = L.marker([location.lat, location.lng], { icon: deliveryIcon })
-                .addTo(map)
-                .bindPopup('🚚 Repartidor en camino')
-                .openPopup();
+        // Icono para el punto de entrega
+        const homeIcon = L.icon({
+            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
 
-            // Si el pedido tiene coordenadas de entrega, mostrarlas también
-            if (order.address_lat && order.address_lng) {
-                const destLat = parseFloat(order.address_lat);
-                const destLng = parseFloat(order.address_lng);
-                if (destLat && destLng) {
-                    L.marker([destLat, destLng], { icon: deliveryIcon })
-                        .addTo(map)
-                        .bindPopup('📦 Punto de entrega')
-                        .openPopup();
+        function updateLocation() {
+            fetch(`/delivery/orders/${orderId}/location`)
+                .then(res => res.json())
+                .then(data => {
+                    const locationUpdateTime = document.getElementById('locationUpdateTime');
+                    const now = new Date();
 
-                    // Ajustar el mapa para mostrar ambos puntos
-                    const bounds = L.latLngBounds(
-                        [location.lat, location.lng],
-                        [destLat, destLng]
-                    );
-                    map.fitBounds(bounds, { padding: [50, 50] });
-                }
-            }
+                    if (data.location && data.location.lat && data.location.lng) {
+                        const lat = parseFloat(data.location.lat);
+                        const lng = parseFloat(data.location.lng);
+
+                        // Actualizar marcador del repartidor
+                        if (!marker) {
+                            marker = L.marker([lat, lng], { icon: deliveryIcon })
+                                .addTo(map)
+                                .bindPopup('<i class="bi bi-truck"></i> Repartidor en camino')
+                                .openPopup();
+
+                            // Si el pedido tiene dirección, mostrar punto de entrega
+                            if (data.order && data.order.address_lat && data.order.address_lng) {
+                                const destLat = parseFloat(data.order.address_lat);
+                                const destLng = parseFloat(data.order.address_lng);
+                                if (destLat && destLng) {
+                                    deliveryMarker = L.marker([destLat, destLng], { icon: homeIcon })
+                                        .addTo(map)
+                                        .bindPopup('<i class="bi bi-geo-alt-fill"></i> Punto de entrega');
+
+                                    // Ajustar vista para mostrar ambos puntos
+                                    const bounds = L.latLngBounds(
+                                        [lat, lng],
+                                        [destLat, destLng]
+                                    );
+                                    map.fitBounds(bounds, { padding: [50, 50] });
+                                }
+                            } else {
+                                map.setView([lat, lng], 15);
+                            }
+                        } else {
+                            marker.setLatLng([lat, lng]);
+                            // Actualizar popup con la nueva ubicación
+                            marker.bindPopup('<i class="bi bi-truck"></i> Repartidor en camino - Actualizado: ' + now.toLocaleTimeString());
+                        }
+
+                        // Actualizar timestamp
+                        if (locationUpdateTime) {
+                            locationUpdateTime.innerHTML = '<i class="bi bi-clock"></i> Última actualización: ' + now.toLocaleTimeString();
+                        }
+                    } else {
+                        if (locationUpdateTime) {
+                            locationUpdateTime.innerHTML = '<i class="bi bi-exclamation-circle"></i> Esperando ubicación del repartidor...';
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('Error al obtener ubicación del repartidor:', err);
+                    const locationUpdateTime = document.getElementById('locationUpdateTime');
+                    if (locationUpdateTime) {
+                        locationUpdateTime.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Error al actualizar ubicación';
+                    }
+                });
         }
+
+        // Actualizar cada 10 segundos
+        updateLocation();
+        setInterval(updateLocation, 10000);
     });
-</script>
+    </script>
 @endif
 @endpush

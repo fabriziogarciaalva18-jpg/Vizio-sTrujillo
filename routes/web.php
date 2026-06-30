@@ -34,7 +34,13 @@ Route::get('/avatar/{filename}', function ($filename) {
 // Catálogo y detalle de producto (públicos)
 Route::get('/catalog', [ProductController::class, 'index'])->name('catalog');
 Route::get('/product/{product}', [ProductController::class, 'show'])->name('products.show');
-Route::get('/orders/{order}/track-location', [OrderController::class, 'trackLocation'])->name('orders.track-location');
+
+// =============================================
+// RUTAS DE UBICACIÓN EN TIEMPO REAL (PÚBLICAS)
+// =============================================
+Route::get('/delivery/orders/{order}/location', [DeliveryController::class, 'getLocation'])
+    ->name('delivery.location');
+
 // =============================================
 // RUTAS AUTENTICADAS
 // (requieren login, verificación de email y usuario activo)
@@ -79,6 +85,7 @@ Route::middleware(['auth', 'verified', CheckUserActive::class])->group(function 
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+    Route::get('/orders/{order}/track-location', [OrderController::class, 'trackLocation'])->name('orders.track-location');
 
     // =========================================
     // PAGOS

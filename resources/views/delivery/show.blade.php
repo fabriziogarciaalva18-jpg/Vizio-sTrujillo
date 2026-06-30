@@ -75,7 +75,7 @@
                         <button id="stopSharingBtn" class="btn-retro-danger" style="display: none;">
                             <i class="bi bi-stop-circle"></i> DETENER COMPARTIR
                         </button>
-                        <small class="text-muted" id="locationStatus">Comparte tu ubicación para que el cliente pueda seguir el pedido.</small>
+                        <small class="text-muted" id="locationStatus"><i class="bi bi-info-circle"></i> Comparte tu ubicación para que el cliente pueda seguir el pedido.</small>
                     @endif
 
                     <form action="{{ route('delivery.confirm', $order) }}" method="POST" class="mt-2">
@@ -123,14 +123,23 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // =============================================
+    // DATOS DEL PEDIDO
+    // =============================================
     const order = @json($order);
     const storeLocation = @json($storeLocation);
 
+    // =============================================
+    // INICIALIZAR MAPA
+    // =============================================
     const map = L.map('deliveryMap').setView([-8.1120, -79.0288], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
+    // =============================================
+    // MARCADOR DE ENTREGA (PUNTO DE DESTINO)
+    // =============================================
     let deliveryMarker = null;
     if (order.address_lat && order.address_lng) {
         const lat = parseFloat(order.address_lat);
@@ -148,17 +157,33 @@ document.addEventListener('DOMContentLoaded', function() {
         map.setView([lat, lng], 15);
     }
 
+    // =============================================
+    // MARCADOR DEL REPARTIDOR (UBICACIÓN ACTUAL)
+    // =============================================
     let personMarker = null;
     if (order.delivery_person_lat && order.delivery_person_lng) {
         const lat = parseFloat(order.delivery_person_lat);
         const lng = parseFloat(order.delivery_person_lng);
-        personMarker = L.marker([lat, lng]).addTo(map).bindPopup('<i class="bi bi-truck"></i> Repartidor aquí');
+        personMarker = L.marker([lat, lng], {
+            icon: L.icon({
+                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            })
+        }).addTo(map).bindPopup('<i class="bi bi-truck"></i> Repartidor aquí');
     }
 
+    // =============================================
+    // COMPARTIR UBICACIÓN (repartidor)
+    // =============================================
     const shareBtn = document.getElementById('shareLocationBtn');
     const stopBtn = document.getElementById('stopSharingBtn');
     const locationStatus = document.getElementById('locationStatus');
     let watchId = null;
+    let locationInterval = null;
 
     if (shareBtn) {
         shareBtn.addEventListener('click', function() {
@@ -167,17 +192,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            // Solicitar permiso y empezar a compartir
             watchId = navigator.geolocation.watchPosition(
                 function(position) {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
 
+                    // Actualizar marcador en el mapa
                     if (!personMarker) {
-                        personMarker = L.marker([lat, lng]).addTo(map).bindPopup('<i class="bi bi-truck"></i> Repartidor aquí');
+                        personMarker = L.marker([lat, lng], {
+                            icon: L.icon({
+                                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                                iconSize: [25, 41],
+                                iconAnchor: [12, 41],
+                                popupAnchor: [1, -34],
+                                shadowSize: [41, 41]
+                            })
+                        }).addTo(map).bindPopup('<i class="bi bi-truck"></i> Repartidor aquí');
                     } else {
                         personMarker.setLatLng([lat, lng]);
                     }
 
+                    // Centrar mapa en la ubicación del repartidor
+                    map.panTo([lat, lng]);
+
+                    // Enviar ubicación al servidor
                     fetch(`/delivery/orders/${order.id}/update-location`, {
                         method: 'POST',
                         headers: {
@@ -189,11 +229,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            locationStatus.innerHTML = '<i class="bi bi-check-circle-fill"></i> Ubicación actualizada: ' +
+                            locationStatus.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i> Ubicación actualizada: ' +
                                 new Date().toLocaleTimeString();
                         }
                     })
-                    .catch(err => console.error(err));
+                    .catch(err => console.error('Error al enviar ubicación:', err));
                 },
                 function(error) {
                     alert('Error al obtener ubicación: ' + error.message);
@@ -203,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             shareBtn.style.display = 'none';
             stopBtn.style.display = 'block';
-            locationStatus.innerHTML = '<i class="bi bi-arrow-repeat"></i> Compartiendo ubicación...';
+            locationStatus.innerHTML = '<i class="bi bi-arrow-repeat text-primary"></i> Compartiendo ubicación en vivo...';
         });
     }
 
@@ -213,57 +253,73 @@ document.addEventListener('DOMContentLoaded', function() {
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
             }
+            if (locationInterval) {
+                clearInterval(locationInterval);
+                locationInterval = null;
+            }
             shareBtn.style.display = 'block';
             stopBtn.style.display = 'none';
-            locationStatus.innerHTML = '<i class="bi bi-stop-circle"></i> Compartir detenido.';
+            locationStatus.innerHTML = '<i class="bi bi-stop-circle text-danger"></i> Compartir detenido.';
         });
     }
-});
-// ... dentro del DOMContentLoaded
 
-// =============================================
-// AUTO‑ACTUALIZACIÓN DE UBICACIÓN (repartidor)
-// =============================================
-let locationInterval = null;
-
-function startLocationUpdates() {
-    if (locationInterval) clearInterval(locationInterval);
-    locationInterval = setInterval(function() {
-        fetch(`/delivery/orders/${order.id}/location`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.location && data.location.lat && data.location.lng) {
-                    const lat = parseFloat(data.location.lat);
-                    const lng = parseFloat(data.location.lng);
-                    // Actualizar marcador del repartidor
-                    if (!personMarker) {
-                        personMarker = L.marker([lat, lng]).addTo(map)
-                            .bindPopup('🚚 Repartidor aquí');
-                    } else {
-                        personMarker.setLatLng([lat, lng]);
+    // =============================================
+    // AUTO‑ACTUALIZACIÓN DE UBICACIÓN (repartidor)
+    // =============================================
+    function startLocationUpdates() {
+        if (locationInterval) clearInterval(locationInterval);
+        locationInterval = setInterval(function() {
+            fetch(`/delivery/orders/${order.id}/location`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.location && data.location.lat && data.location.lng) {
+                        const lat = parseFloat(data.location.lat);
+                        const lng = parseFloat(data.location.lng);
+                        // Actualizar marcador del repartidor
+                        if (!personMarker) {
+                            personMarker = L.marker([lat, lng], {
+                                icon: L.icon({
+                                    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                                    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                                    iconSize: [25, 41],
+                                    iconAnchor: [12, 41],
+                                    popupAnchor: [1, -34],
+                                    shadowSize: [41, 41]
+                                })
+                            }).addTo(map).bindPopup('<i class="bi bi-truck"></i> Repartidor aquí');
+                        } else {
+                            personMarker.setLatLng([lat, lng]);
+                        }
+                        // Opcional: centrar el mapa en la nueva ubicación
+                        map.panTo([lat, lng]);
+                        // Actualizar timestamp
+                        const statusEl = document.getElementById('locationStatus');
+                        if (statusEl) {
+                            const time = data.location.updated_at ? new Date(data.location.updated_at).toLocaleTimeString() : 'ahora';
+                            statusEl.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i> Ubicación actualizada: ' + time;
+                        }
                     }
-                    // Opcional: centrar el mapa en la nueva ubicación
-                    map.panTo([lat, lng]);
-                    // Actualizar timestamp
-                    const statusEl = document.getElementById('locationStatus');
-                    if (statusEl) {
-                        const time = data.location.updated_at ? new Date(data.location.updated_at).toLocaleTimeString() : 'ahora';
-                        statusEl.innerHTML = '✅ Ubicación actualizada: ' + time;
-                    }
-                }
-            })
-            .catch(err => console.error('Error al obtener ubicación:', err));
-    }, 10000); // cada 10 segundos
-}
+                })
+                .catch(err => console.error('Error al obtener ubicación:', err));
+        }, 10000); // cada 10 segundos
+    }
 
-// Iniciar actualizaciones si el pedido está en estado de entrega
-if (order.status === 'preparing' || order.status === 'delivering') {
-    startLocationUpdates();
-}
+    // Iniciar actualizaciones si el pedido está en estado de entrega
+    if (order.status === 'preparing' || order.status === 'delivering') {
+        startLocationUpdates();
+    }
 
-// Detener actualizaciones al salir de la página (opcional)
-window.addEventListener('beforeunload', function() {
-    if (locationInterval) clearInterval(locationInterval);
+    // =============================================
+    // LIMPIEZA AL SALIR DE LA PÁGINA
+    // =============================================
+    window.addEventListener('beforeunload', function() {
+        if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+        }
+        if (locationInterval) {
+            clearInterval(locationInterval);
+        }
+    });
 });
 </script>
 @endpush

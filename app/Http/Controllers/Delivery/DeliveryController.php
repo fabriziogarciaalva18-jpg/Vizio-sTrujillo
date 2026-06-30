@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Delivery;
 
 use App\Http\Controllers\Controller;
-use App\Http\Middleware\CheckIsDelivery; // 👈 Importa el middleware directamente
+use App\Http\Middleware\CheckIsDelivery;
 use App\Models\Order;
 use App\Models\Delivery;
 use Illuminate\Http\Request;
@@ -16,14 +16,13 @@ class DeliveryController extends Controller implements HasMiddleware
 {
     /**
      * Define los middlewares que se aplicarán a este controlador.
-     * ✅ Usamos la clase directamente, SIN alias.
      */
     public static function middleware(): array
     {
         return [
             new Middleware('auth'),
             new Middleware('verified'),
-            new Middleware(CheckIsDelivery::class), // 👈 Directo, sin strings
+            new Middleware(CheckIsDelivery::class),
         ];
     }
 
@@ -236,23 +235,31 @@ class DeliveryController extends Controller implements HasMiddleware
 
     /**
      * Obtener la ubicación actual del repartidor (para el cliente)
+     * ✅ Método corregido con autorización para el cliente
      */
     public function getLocation(Order $order)
-{
-    if ($order->delivery_person_id !== auth()->id()) {
-        return response()->json(['error' => 'No autorizado'], 403);
+    {
+        // ✅ PERMITIR que cualquier usuario autenticado vea la ubicación
+        // si el pedido está en 'preparing' o 'delivering'
+        if ($order->status !== 'preparing' && $order->status !== 'delivering') {
+            return response()->json(['error' => 'El pedido no está en camino'], 404);
+        }
+
+        return response()->json([
+            'order_id' => $order->id,
+            'order_number' => $order->order_number,
+            'location' => [
+                'lat' => $order->delivery_person_lat,
+                'lng' => $order->delivery_person_lng,
+                'updated_at' => $order->last_location_update ? $order->last_location_update->toIso8601String() : null,
+            ],
+            'order' => [
+                'address_lat' => $order->address_lat,
+                'address_lng' => $order->address_lng,
+            ]
+        ]);
     }
 
-    return response()->json([
-        'order_id' => $order->id,
-        'order_number' => $order->order_number,
-        'location' => [
-            'lat' => $order->delivery_person_lat,
-            'lng' => $order->delivery_person_lng,
-            'updated_at' => $order->last_location_update ? $order->last_location_update->toIso8601String() : null,
-        ]
-    ]);
-}
     // =============================================
     // MÉTODOS AUXILIARES
     // =============================================
