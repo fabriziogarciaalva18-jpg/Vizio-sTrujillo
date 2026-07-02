@@ -68,31 +68,35 @@ class OrderController extends Controller
      * Actualizar el estado de un pedido (admin)
      */
     public function updateStatus(Request $request, Order $order)
-    {
-        // 🔒 No permitir cambiar si el pedido ya está cancelado por el usuario
-        if ($order->status === 'cancelled') {
-            return redirect()->back()->with('error', 'No se puede modificar un pedido cancelado por el usuario.');
-        }
-
-        // 🔒 No permitir cambiar si el pedido ya fue rechazado (y no es para cambiarlo a otro estado)
-        if ($order->status === 'rejected' && $request->status !== 'rejected') {
-            return redirect()->back()->with('error', 'Un pedido rechazado no puede cambiar a otro estado.');
-        }
-
-        $request->validate([
-            'status' => 'required|in:pending,confirmed,preparing,delivering,delivered,cancelled,rejected'
-        ]);
-
-        // Si el estado es 'rejected', también marcamos el pago como rechazado
-        if ($request->status === 'rejected') {
-            $order->payment_status = 'failed';
-        }
-
-        $order->status = $request->status;
-        $order->save();
-
-        return redirect()->back()->with('success', 'Estado del pedido actualizado');
+{
+    // 🔒 No permitir cambiar si el pedido ya está cancelado o rechazado
+    if ($order->status === 'cancelled') {
+        return redirect()->back()->with('error', 'No se puede modificar un pedido cancelado por el usuario.');
     }
+    if ($order->status === 'rejected' && $request->status !== 'rejected') {
+        return redirect()->back()->with('error', 'Un pedido rechazado no puede cambiar a otro estado.');
+    }
+
+    $request->validate([
+        'status' => 'required|in:pending,confirmed,preparing,delivering,delivered,cancelled,rejected'
+    ]);
+
+    // Si el estado es 'rejected', marcar pago como fallido
+    if ($request->status === 'rejected') {
+        $order->payment_status = 'failed';
+    }
+
+    // ✅ Si el pedido se entrega y es contraentrega, marcar como pagado
+    if ($request->status === 'delivered' && $order->payment_method === 'contraentrega') {
+        $order->payment_status = 'paid';
+        $order->paid_at = now();
+    }
+
+    $order->status = $request->status;
+    $order->save();
+
+    return redirect()->back()->with('success', 'Estado del pedido actualizado');
+}
 
     /**
      * Actualizar un item del carrito desde el modal de edición (usado por el frontend)
