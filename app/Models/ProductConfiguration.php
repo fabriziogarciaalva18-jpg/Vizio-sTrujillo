@@ -26,9 +26,9 @@ class ProductConfiguration extends Model
 
     // Relación muchos a muchos con productos
     public function products()
-    {
-        return $this->belongsToMany(Product::class, 'configuration_product');
-    }
+{
+    return $this->belongsToMany(Product::class, 'configuration_product', 'configuration_id', 'product_id');
+}
 
     // Scope para obtener configuraciones activas
     public function scopeActive($query)
