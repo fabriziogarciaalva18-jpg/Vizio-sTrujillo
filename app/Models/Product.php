@@ -69,4 +69,17 @@ class Product extends Model
 
     return $grouped;
 }
+public function getImageUrlAttribute()
+{
+    if ($this->image_url) {
+        // Si es una URL externa, devolverla directamente
+        if (filter_var($this->image_url, FILTER_VALIDATE_URL)) {
+            return $this->image_url;
+        }
+        // Si es un nombre de archivo, generar URL con asset()
+        return asset('storage/products/' . $this->image_url);
+    }
+    // Imagen por defecto (placeholder)
+    return 'https://placehold.co/400x300/F5F3EE/0A0A0A?text=' . urlencode($this->name);
+}
 }
