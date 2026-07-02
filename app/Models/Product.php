@@ -71,13 +71,15 @@ class Product extends Model
 }
 public function getImageUrlAttribute()
 {
-    if ($this->image_url) {
+    // Verificar si el atributo existe y no está vacío
+    if (!empty($this->attributes['image_url'])) {
+        $image = $this->attributes['image_url'];
         // Si es una URL externa, devolverla directamente
-        if (filter_var($this->image_url, FILTER_VALIDATE_URL)) {
-            return $this->image_url;
+        if (filter_var($image, FILTER_VALIDATE_URL)) {
+            return $image;
         }
         // Si es un nombre de archivo, generar URL con asset()
-        return asset('storage/products/' . $this->image_url);
+        return asset('storage/products/' . $image);
     }
     // Imagen por defecto (placeholder)
     return 'https://placehold.co/400x300/F5F3EE/0A0A0A?text=' . urlencode($this->name);
