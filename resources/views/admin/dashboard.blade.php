@@ -45,7 +45,7 @@
                     <i class="bi bi-currency-dollar"></i>
                 </div>
                 <div class="stat-info-retro">
-                    <h3>S/. {{ number_format($stats['total_revenue'] / 100, 0) }}</h3>
+                    <h3>S/. {{ number_format($stats['total_revenue'], 0) }}</h3>
                     <p>Ingresos Totales</p>
                 </div>
             </div>
