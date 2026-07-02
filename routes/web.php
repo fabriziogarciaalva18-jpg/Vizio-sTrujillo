@@ -34,7 +34,7 @@ Route::get('/avatar/{filename}', function ($filename) {
 // Catálogo y detalle de producto (públicos)
 Route::get('/catalog', [ProductController::class, 'index'])->name('catalog');
 Route::get('/product/{product}', [ProductController::class, 'show'])->name('products.show');
-
+Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
 // =============================================
 // RUTAS DE UBICACIÓN EN TIEMPO REAL (PÚBLICAS)
 // =============================================
