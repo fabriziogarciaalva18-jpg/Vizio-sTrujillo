@@ -44,13 +44,17 @@
         <div class="alert alert-success" style="background: #DCFCE7; color: #166534;">{{ session('success') }}</div>
     @endif
 
+    @if(session('error'))
+        <div class="alert alert-danger" style="background: #FEE2E2; color: #991B1B;">{{ session('error') }}</div>
+    @endif
+
     <div class="admin-card-retro">
         <div class="table-responsive">
             <table class="admin-table-retro">
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Producto</th>
+                        <th>Productos aplicables</th>
                         <th>Tipo</th>
                         <th>Opción</th>
                         <th>Precio extra</th>
@@ -63,7 +67,15 @@
                     @forelse($configurations as $config)
                     <tr>
                         <td>{{ $config->id }}</td>
-                        <td>{{ $config->product->name ?? 'N/A' }}</td>
+                        <td>
+                            @if($config->products->count() > 0)
+                                @foreach($config->products as $product)
+                                    <span class="badge bg-light text-dark">{{ $product->name }}</span>
+                                @endforeach
+                            @else
+                                <span class="text-muted">Sin productos</span>
+                            @endif
+                        </td>
                         <td>{{ $types[$config->config_type] ?? ucfirst($config->config_type) }}</td>
                         <td><strong>{{ $config->name }}</strong></td>
                         <td>S/. {{ number_format($config->price_modifier, 2) }}</td>
@@ -91,7 +103,12 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" class="text-center py-4">No hay personalizaciones registradas.</td></tr>
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <i class="bi bi-emoji-frown" style="font-size: 2rem;"></i>
+                            <p class="mt-2">No hay personalizaciones registradas.</p>
+                        </td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>

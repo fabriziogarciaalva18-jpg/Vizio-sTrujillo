@@ -10,20 +10,20 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'category_id',
-        'name',
-        'slug',
-        'description',
-        'image_url',
-        'product_type',
-        'has_sizes',
-        'has_layers',
-        'has_flavors',
-        'has_fillings',
-        'has_coverings',
-        'base_price',
-        'is_active',
-    ];
+    'category_id',
+    'name',
+    'slug',
+    'description',
+    'image_url',
+    'product_type',
+    'has_sizes',
+    'has_layers',
+    'has_flavors',
+    'has_fillings',
+    'has_coverings',
+    'base_price',
+    'is_active',
+];
 
     protected $casts = [
         'base_price' => 'decimal:2',
@@ -42,7 +42,7 @@ class Product extends Model
 
     public function configurations()
 {
-    return $this->belongsToMany(ProductConfiguration::class, 'configuration_product');
+    return $this->belongsToMany(ProductConfiguration::class, 'configuration_product', 'product_id', 'configuration_id');
 }
 
    public function getConfigurationsByType($type)

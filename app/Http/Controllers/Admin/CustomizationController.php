@@ -75,30 +75,30 @@ class CustomizationController extends Controller implements HasMiddleware
     }
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'config_type' => 'required|in:size,layers,flavor,filling,covering,shape,color,toppings,message,decoration',
-            'name' => 'required|string|max:255',
-            'price_modifier' => 'nullable|numeric|min:0',
-            'sort_order' => 'nullable|integer|min:0',
-            'is_active' => 'nullable|boolean',
-            'product_ids' => 'required|array|min:1',
-            'product_ids.*' => 'exists:products,id',
-        ]);
+{
+    $validated = $request->validate([
+        'config_type' => 'required|in:size,layers,flavor,filling,covering,shape,color,toppings,message,decoration',
+        'name' => 'required|string|max:255',
+        'price_modifier' => 'nullable|numeric|min:0',
+        'sort_order' => 'nullable|integer|min:0',
+        'is_active' => 'nullable|boolean',
+        'product_ids' => 'required|array|min:1',
+        'product_ids.*' => 'exists:products,id',
+    ]);
 
-        $validated['is_active'] = $request->has('is_active');
-        $validated['sort_order'] = $request->input('sort_order', 0);
-        $validated['price_modifier'] = $request->input('price_modifier', 0);
+    $validated['is_active'] = $request->has('is_active');
+    $validated['sort_order'] = $request->input('sort_order', 0);
+    $validated['price_modifier'] = $request->input('price_modifier', 0);
 
-        // Crear la configuración
-        $configuration = ProductConfiguration::create($validated);
+    // Crear la configuración (sin product_id)
+    $configuration = ProductConfiguration::create($validated);
 
-        // Asociar productos
-        $configuration->products()->attach($request->product_ids);
+    // Asociar productos (muchos a muchos)
+    $configuration->products()->attach($request->product_ids);
 
-        return redirect()->route('admin.customizations.index')
-            ->with('success', 'Personalización creada exitosamente.');
-    }
+    return redirect()->route('admin.customizations.index')
+        ->with('success', 'Personalización creada exitosamente.');
+}
 
     public function edit(ProductConfiguration $customization)
     {
@@ -119,29 +119,29 @@ class CustomizationController extends Controller implements HasMiddleware
     }
 
     public function update(Request $request, ProductConfiguration $customization)
-    {
-        $validated = $request->validate([
-            'config_type' => 'required|in:size,layers,flavor,filling,covering,shape,color,toppings,message,decoration',
-            'name' => 'required|string|max:255',
-            'price_modifier' => 'nullable|numeric|min:0',
-            'sort_order' => 'nullable|integer|min:0',
-            'is_active' => 'nullable|boolean',
-            'product_ids' => 'required|array|min:1',
-            'product_ids.*' => 'exists:products,id',
-        ]);
+{
+    $validated = $request->validate([
+        'config_type' => 'required|in:size,layers,flavor,filling,covering,shape,color,toppings,message,decoration',
+        'name' => 'required|string|max:255',
+        'price_modifier' => 'nullable|numeric|min:0',
+        'sort_order' => 'nullable|integer|min:0',
+        'is_active' => 'nullable|boolean',
+        'product_ids' => 'required|array|min:1',
+        'product_ids.*' => 'exists:products,id',
+    ]);
 
-        $validated['is_active'] = $request->has('is_active');
-        $validated['sort_order'] = $request->input('sort_order', 0);
-        $validated['price_modifier'] = $request->input('price_modifier', 0);
+    $validated['is_active'] = $request->has('is_active');
+    $validated['sort_order'] = $request->input('sort_order', 0);
+    $validated['price_modifier'] = $request->input('price_modifier', 0);
 
-        $customization->update($validated);
+    $customization->update($validated);
 
-        // Sincronizar productos
-        $customization->products()->sync($request->product_ids);
+    // Sincronizar productos
+    $customization->products()->sync($request->product_ids);
 
-        return redirect()->route('admin.customizations.index')
-            ->with('success', 'Personalización actualizada correctamente.');
-    }
+    return redirect()->route('admin.customizations.index')
+        ->with('success', 'Personalización actualizada correctamente.');
+}
 
     public function destroy(ProductConfiguration $customization)
     {
