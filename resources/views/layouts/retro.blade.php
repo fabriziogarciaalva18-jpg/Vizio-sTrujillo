@@ -196,31 +196,6 @@
         </div>
     </nav>
 
-    <!-- FLASH MESSAGES -->
-    @if(session('success'))
-    <div class="container mt-3">
-        <div class="alert alert-retro" style="background: #DCFCE7; border-color: #86EFAC; color: #166534;">
-            <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
-        </div>
-    </div>
-    @endif
-
-    @if(session('error'))
-    <div class="container mt-3">
-        <div class="alert alert-retro" style="background: #FEE2E2; border-color: #FCA5A5; color: #991B1B;">
-            <i class="bi bi-exclamation-triangle-fill"></i> {{ session('error') }}
-        </div>
-    </div>
-    @endif
-
-    @if(session('warning'))
-    <div class="container mt-3">
-        <div class="alert alert-retro" style="background: #FEF3C7; border-color: #FDE68A; color: #92400E;">
-            <i class="bi bi-exclamation-triangle-fill"></i> {{ session('warning') }}
-        </div>
-    </div>
-    @endif
-
     <!-- CONTENIDO PRINCIPAL -->
     <main>
         @yield('content')
