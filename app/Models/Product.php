@@ -41,27 +41,32 @@ class Product extends Model
     }
 
     public function configurations()
-    {
-        return $this->hasMany(ProductConfiguration::class);
-    }
+{
+    return $this->belongsToMany(ProductConfiguration::class, 'configuration_product');
+}
 
-    public function getConfigurationsByType($type)
-    {
-        return $this->configurations()->where('config_type', $type)->orderBy('sort_order')->get();
-    }
+   public function getConfigurationsByType($type)
+{
+    return $this->configurations()
+        ->where('config_type', $type)
+        ->where('is_active', true)
+        ->orderBy('sort_order')
+        ->get();
+}
 
     // ACCESOR CORREGIDO - Usa $this->attributes en lugar de propiedad directa
-    public function getImageUrlAttribute()
-    {
-        $image = $this->attributes['image_url'] ?? null;
+    public function getGroupedConfigurationsAttribute()
+{
+    $grouped = [];
+    $types = ['size', 'layers', 'flavor', 'filling', 'covering', 'shape', 'color', 'toppings', 'decoration', 'message'];
 
-        if ($image) {
-            if (filter_var($image, FILTER_VALIDATE_URL)) {
-                return $image;
-            }
-            return asset('storage/products/' . $image);
+    foreach ($types as $type) {
+        $items = $this->getConfigurationsByType($type);
+        if ($items->isNotEmpty()) {
+            $grouped[$type] = $items;
         }
-
-        return 'https://placehold.co/400x300/F5F3EE/0A0A0A?text=' . urlencode($this->name);
     }
+
+    return $grouped;
+}
 }

@@ -27,27 +27,30 @@ class ProductController extends Controller
     }
 
     public function show(Product $product)
-    {
-        $configs = $product->configurations()->where('is_active', true)->get();
-        $messageConfig = null;
-        $otherConfigs = [];
+{
+    // Obtener configuraciones asociadas a este producto (a través de la tabla pivote)
+    $configs = $product->configurations()->where('is_active', true)->get();
 
-        foreach ($configs as $config) {
-            if ($config->config_type === 'message') {
-                $messageConfig = $config;
-            } else {
-                $otherConfigs[$config->config_type][] = $config;
-            }
+    $messageConfig = null;
+    $otherConfigs = [];
+
+    foreach ($configs as $config) {
+        if ($config->config_type === 'message') {
+            $messageConfig = $config;
+        } else {
+            $otherConfigs[$config->config_type][] = $config;
         }
-
-        $configurations = [];
-        foreach ($otherConfigs as $type => $items) {
-            $configurations[$type] = collect($items);
-        }
-
-        $addons = Addon::where('is_active', true)->get();
-        return view('products.show', compact('product', 'configurations', 'addons', 'messageConfig'));
     }
+
+    $configurations = [];
+    foreach ($otherConfigs as $type => $items) {
+        $configurations[$type] = collect($items);
+    }
+
+    $addons = Addon::where('is_active', true)->get();
+
+    return view('products.show', compact('product', 'configurations', 'addons', 'messageConfig'));
+}
 
     public function filter(Request $request)
     {
